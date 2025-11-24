@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Waseda Student Circle Directory</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=IBM+Plex+Sans:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Top navigation bar -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="logo-group">
+        <img src="assets/waseda-logo.svg" alt="Waseda University logo" class="logo" />
+        <nav class="top-links" role="navigation" aria-label="Main navigation">
+          <a href="#">Home</a>
+          <a href="#">About</a>
+          <a href="#">FAQs</a>
+        </nav>
+      </div>
+
+      <!-- Search -->
+      <form id="searchForm" class="search-wrap" role="search" aria-label="Search circles">
+        <input id="searchInput" type="search" placeholder="Search circles..." aria-label="Search circles" />
+        <button type="submit" class="btn-search">Search</button>
+      </form>
+
+      <!-- Language selector -->
+      <div class="lang-wrap">
+        <select id="langSelect" aria-label="Select language">
+          <option value="en" selected>English</option>
+          <option value="ja">日本語</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Sidebar filters -->
+    <aside class="sidebar" aria-labelledby="filtersHeading">
+      <div class="filter-header">
+        <h2 id="filtersHeading">Filters</h2>
+        <button id="toggleFilters" class="btn-toggle" aria-expanded="true" aria-controls="filtersPanel">Collapse</button>
+      </div>
+      <div id="filtersPanel" class="filters">
+        <div class="filter-group">
+          <label class="filter-label" for="filterCategory">Category</label>
+          <select id="filterCategory">
+            <option value="">All</option>
+            <option value="sports">Sports</option>
+            <option value="culture">Culture</option>
+            <option value="tech">Tech</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filterSubcategory">Circle sub-category</label>
+          <select id="filterSubcategory">
+            <option value="">All</option>
+            <option value="music">Music</option>
+            <option value="dance">Dance</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filterLevel">Level</label>
+          <select id="filterLevel">
+            <option value="">All</option>
+            <option value="beginner">Beginner</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-checkbox">
+            <input type="checkbox" id="filterForeignerFriendly" />
+            <span>Foreigner-friendly</span>
+          </label>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Sort by members</label>
+          <button id="sortMembers" class="btn-outline" data-sort="asc" type="button" aria-pressed="false">Min → Max</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Content -->
+    <section class="content" aria-live="polite">
+      <div id="spinner" class="spinner" hidden></div>
+      <div id="noResults" class="no-results" hidden>No results</div>
+      <div id="cardGrid" class="grid" role="list"></div>
+      <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <img src="assets/waseda-logo.svg" alt="Waseda University logo" class="logo-footer" />
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">FAQs</a>
+      <select id="langSelectFooter" aria-label="Select language footer">
+        <option value="en" selected>English</option>
+        <option value="ja">日本語</option>
+      </select>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
