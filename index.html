@@ -1,114 +1,981 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>早稲田サークルディレクトリ</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>早稲田大学 サークルディレクトリ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --maroon: #8B0000;
+            --gold: #FFD700;
+            --white: #FFFFFF;
+            --gray: #666666;
+            --light-gray: #f5f5f5;
+            --dark-gray: #333333;
+            --card-height: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-weight: 300;
+            line-height: 1.6;
+            color: var(--dark-gray);
+            background-color: var(--white);
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: var(--maroon);
+            padding: 1rem 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 400;
+            transition: opacity 0.3s;
+        }
+
+        .nav-link:hover {
+            opacity: 0.8;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 2rem;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        /* Main Container */
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 80px auto 0;
+            padding: 2rem;
+            gap: 2rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+        }
+
+        .filter-section h3 {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--maroon);
+        }
+
+        .filter-section h4 {
+            font-weight: 500;
+            margin: 1.5rem 0 0.5rem 0;
+            color: var(--dark-gray);
+        }
+
+        .category-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .category-btn {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray);
+            background: var(--white);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-weight: 400;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .category-btn.active,
+        .category-btn:hover {
+            background-color: var(--maroon);
+            color: var(--white);
+            border-color: var(--maroon);
+        }
+
+        .subcategory-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .subcategory-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--light-gray);
+            background: var(--white);
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .subcategory-btn.active {
+            background-color: var(--maroon);
+            color: var(--white);
+            border-color: var(--maroon);
+        }
+
+        /* Toggle Switch */
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            margin: 1rem 0;
+        }
+
+        .toggle-slider {
+            width: 40px;
+            height: 20px;
+            background-color: #ccc;
+            border-radius: 20px;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-slider:after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        #foreignerFriendly:checked + .toggle-slider {
+            background-color: var(--maroon);
+        }
+
+        #foreignerFriendly:checked + .toggle-slider:after {
+            transform: translateX(20px);
+        }
+
+        #foreignerFriendly {
+            display: none;
+        }
+
+        /* Sort Buttons */
+        .sort-section {
+            margin-top: 1.5rem;
+        }
+
+        .sort-btn {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--gray);
+            background: var(--white);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .sort-btn:hover {
+            background-color: var(--light-gray);
+        }
+
+        .sort-btn.active {
+            background-color: var(--maroon);
+            color: var(--white);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-height: 80vh;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        /* Circle Grid */
+        .circle-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .circle-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+            }
+            .circle-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Circle Card */
+        .circle-card {
+            height: var(--card-height);
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            background-color: var(--light-gray);
+        }
+
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(139, 0, 0, 0.8) 0%,
+                transparent 20%,
+                transparent 80%,
+                rgba(139, 0, 0, 0.8) 100%
+            );
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1rem;
+            color: var(--white);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .circle-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .circle-category {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .member-count {
+            font-size: 0.9rem;
+        }
+
+        .foreigner-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--gold);
+        }
+
+        /* Expanded Card Overlay */
+        .card-expanded {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 2rem;
+        }
+
+        .expanded-content {
+            background-color: var(--white);
+            border-radius: 8px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark-gray);
+            z-index: 10;
+        }
+
+        .expanded-header {
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .expanded-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(139, 0, 0, 0.8) 0%,
+                transparent 50%
+            );
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1.5rem;
+            color: var(--white);
+        }
+
+        .expanded-body {
+            padding: 1.5rem;
+        }
+
+        .expanded-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .expanded-section h3 {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--maroon);
+            border-bottom: 1px solid var(--light-gray);
+            padding-bottom: 0.5rem;
+        }
+
+        .contact-info, .event-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid var(--maroon);
+            background: var(--white);
+            color: var(--maroon);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            background-color: var(--maroon);
+            color: var(--white);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray);
+            background: var(--white);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .page-btn.active {
+            background-color: var(--maroon);
+            color: var(--white);
+            border-color: var(--maroon);
+        }
+
+        .page-btn:hover:not(.active) {
+            background-color: var(--light-gray);
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--maroon);
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            color: var(--white);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--white);
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .footer-links a:hover {
+            opacity: 0.8;
+        }
+
+        /* Mobile Navigation */
+        @media (max-width: 768px) {
+            .nav-content {
+                flex-wrap: wrap;
+            }
+            .search-container {
+                order: 3;
+                margin-top: 1rem;
+                max-width: 100%;
+            }
+            .nav-links {
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <!-- Top Navigation (fixed) -->
-  <header class="topbar" role="banner">
-    <div class="topbar-inner">
-      <div class="brand">
-        <img src="assets/logo.svg" alt="Waseda logo" class="logo" />
-      </div>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">早稲田サークル</div>
+            <div class="nav-links">
+                <a href="#home" class="nav-link">ホーム</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#faq" class="nav-link">FAQ</a>
+            </div>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="サークルを検索..." class="search-bar">
+            </div>
+        </div>
+    </nav>
 
-      <nav class="nav-links" aria-label="Main navigation">
-        <a href="#" class="nav-item">Home</a>
-        <a href="#" class="nav-item">About</a>
-        <a href="#" class="nav-item">FAQs</a>
-      </nav>
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Sidebar Filters -->
+        <aside class="sidebar">
+            <div class="filter-section">
+                <h3>カテゴリで絞り込み</h3>
+                <div class="category-buttons">
+                    <button class="category-btn active" data-category="sports">スポーツ(球技以外)</button>
+                    <button class="category-btn" data-category="academic">学問</button>
+                    <button class="category-btn" data-category="media">メディア・出版</button>
+                    <button class="category-btn" data-category="culture">文化・芸術</button>
+                    <button class="category-btn" data-category="other">その他</button>
+                </div>
+                
+                <div class="subcategory-section">
+                    <h4>サブカテゴリ</h4>
+                    <div id="subcategoryContainer" class="subcategory-buttons">
+                        <!-- Subcategories will be loaded dynamically -->
+                    </div>
+                </div>
 
-      <div class="search-language">
-        <form id="searchForm" class="search-form" role="search" aria-label="Search circles">
-          <input id="searchInput" type="search" placeholder="サークルを検索..." aria-label="Search input" />
-          <button type="submit" aria-label="Search button">検索</button>
-        </form>
+                <div class="filter-options">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="foreignerFriendly">
+                        <span class="toggle-slider"></span>
+                        外国人歓迎
+                    </label>
+                </div>
 
-        <select id="langSelect" aria-label="Language selector" title="Language">
-          <option value="ja" selected>日本語</option>
-          <option value="en">English</option>
-        </select>
-      </div>
+                <div class="sort-section">
+                    <button class="sort-btn" id="sortMembers">
+                        メンバー数でソート
+                    </button>
+                    <button class="sort-btn" id="sortForeignMembers">
+                        外国人メンバー数でソート
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Grid -->
+        <main class="main-content">
+            <div id="loadingSpinner" class="loading-spinner">読み込み中...</div>
+            <div id="circleGrid" class="circle-grid">
+                <!-- Circle cards will be loaded here -->
+            </div>
+            <div id="noResults" class="no-results" style="display: none;">
+                該当するサークルが見つかりませんでした
+            </div>
+            <div class="pagination" id="pagination">
+                <!-- Pagination will be loaded here -->
+            </div>
+        </main>
     </div>
-  </header>
 
-  <!-- Main layout -->
-  <main class="main" role="main">
-    <aside class="sidebar" id="sidebar" aria-label="Filters">
-      <div class="sidebar-inner">
-        <h3>Filters</h3>
-
-        <div class="filter-row">
-          <label class="toggle">
-            <input id="foreignerToggle" type="checkbox" />
-            <span>外国人受け入れあり</span>
-          </label>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="logo">早稲田サークル</div>
+            <div class="footer-links">
+                <a href="#home">ホーム</a>
+                <a href="#about">About</a>
+                <a href="#faq">FAQ</a>
+            </div>
         </div>
+    </footer>
 
-        <div class="filter-row">
-          <label for="categorySelect">カテゴリ</label>
-          <select id="categorySelect">
-            <option value="">-- 選択してください --</option>
-            <option value="sports_nonball">スポーツ(球技以外)</option>
-            <option value="gakumon">学問</option>
-            <option value="media">メディア・出版</option>
-            <option value="culture">文化・芸術</option>
-            <option value="other">その他</option>
-          </select>
-        </div>
+    <script>
+        // Configuration
+        const SHEET_URLS = {
+            sports: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRv68Z2O5A37_GNZWV5byGgRWcoeA0axvwyzYuwByq2vtleUspMTkpBn9FAGJ-jqejX-5FJnaiS1i_Q/pub?output=csv",
+            academic: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZeeFkaYJYzjzoCxucwMTaaGTD6tpyNCpZVhocgNcAcT5F-pSm4r_ext7Kzl4J4Olwayz-q_pnKGEa/pub?output=csv",
+            media: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRF1QkL3Vno2tBzRQD0ZcNKa0oFwfUFcB8wpd9yPJI-Un-bMfD2ywrT4wqwri9piY8YEKjsY839_YfX/pub?output=csv",
+            culture: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzOY7j83L-BB2dAs7738lO9w7sEu_lUbk0mLri2tnq15xAQZonEzfw6j7nfQPpgiaHv6YWCDfXuwSQ/pub?output=csv",
+            other: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTysfxHQrwVeF0UmbKOJx2fFe-gcJGKUqyT2LdF314ehOXnaSU-LyzV96Bl4tWIiACsd_S3bGoF9YYI/pub?output=csv"
+        };
 
-        <div class="filter-row">
-          <label for="subcategorySelect">サブカテゴリ</label>
-          <select id="subcategorySelect" disabled>
-            <option value="">-- カテゴリを選んでください --</option>
-          </select>
-        </div>
+        // Subcategory mapping
+        const SUBCATEGORIES = {
+            sports: ["バドミントン", "ダンス", "武道", "乗馬", "ヨット", "スキー", "水泳", "サイクリング", "アウトドア", "そのほかのスポーツ"],
+            academic: ["政治", "経済", "歴史", "宗教", "哲学", "法律", "自然科学", "言語", "日本文学", "日本文化", "学問", "趣味", "技術"],
+            media: ["出版 / Publication", "コミュニケーション / Communication", "マスメディア / Media", "企画 / Planning", "レクリエーション / Recreation"],
+            culture: ["舞台芸術", "演劇", "映画", "音楽", "声楽", "美術", "その他の文化"],
+            other: ["学生稲門会"]
+        };
 
-        <div class="filter-row">
-          <label>並び替え (所属人数)</label>
-          <button id="sortToggle" class="sort-btn" data-order="desc">Max ↔ Min</button>
-        </div>
+        // Global state
+        let allCircles = [];
+        let filteredCircles = [];
+        let currentCategory = "sports";
+        let currentSubcategory = null;
+        let currentPage = 1;
+        const circlesPerPage = 12;
 
-        <div class="subcategories">
-          <button class="circle-btn" data-value="">全て</button>
-          <button class="circle-btn" data-value="バドミントン">バドミントン</button>
-          <button class="circle-btn" data-value="ダンス">ダンス</button>
-        </div>
-      </div>
-    </aside>
+        // DOM elements
+        const circleGrid = document.getElementById('circleGrid');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const noResults = document.getElementById('noResults');
+        const pagination = document.getElementById('pagination');
+        const searchInput = document.getElementById('searchInput');
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        const subcategoryContainer = document.getElementById('subcategoryContainer');
+        const foreignerFriendly = document.getElementById('foreignerFriendly');
+        const sortMembersBtn = document.getElementById('sortMembers');
+        const sortForeignMembersBtn = document.getElementById('sortForeignMembers');
 
-    <section class="content" id="content" aria-live="polite">
-      <div id="states" class="states">
-        <div id="loading" class="state loading">読み込み中…</div>
-        <div id="error" class="state error" hidden>データの読み込みに失敗しました。</div>
-        <div id="noresults" class="state noresults" hidden>該当する結果はありません。</div>
-      </div>
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllData();
+            setupEventListeners();
+        });
 
-      <div id="grid" class="grid" role="list"></div>
+        // Load data from all sheets
+        async function loadAllData() {
+            try {
+                loadingSpinner.style.display = 'block';
+                
+                const promises = Object.entries(SHEET_URLS).map(async ([category, url]) => {
+                    const circles = await fetchSheetData(url, category);
+                    return circles.map(circle => ({...circle, category}));
+                });
+                
+                const results = await Promise.all(promises);
+                allCircles = results.flat();
+                
+                loadingSpinner.style.display = 'none';
+                renderSubcategories();
+                filterAndRenderCircles();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                loadingSpinner.textContent = 'データの読み込みに失敗しました';
+            }
+        }
 
-      <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
-    </section>
-  </main>
+        // Fetch and parse CSV data
+        async function fetchSheetData(url, category) {
+            try {
+                const response = await fetch(url);
+                const csvText = await response.text();
+                return parseCSV(csvText, category);
+            } catch (error) {
+                console.error(`Error fetching ${category} data:`, error);
+                return [];
+            }
+        }
 
-  <footer class="footer" role="contentinfo">
-    <div class="footer-inner">
-      <img src="assets/logo.svg" alt="Waseda logo" class="logo footer-logo" />
-      <nav class="footer-links">
-        <a href="#">Home</a>
-        <a href="#">About</a>
-        <a href="#">FAQs</a>
-      </nav>
-      <div class="footer-lang">
-        <select id="footerLang" aria-label="Footer language selector">
-          <option value="ja" selected>日本語</option>
-          <option value="en">English</option>
-        </select>
-      </div>
-    </div>
-  </footer>
+        // Parse CSV data
+        function parseCSV(csvText, category) {
+            const lines = csvText.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            const circles = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values.length < 2 || !values[0]) continue;
+                
+                const circle = {
+                    name: values[0] || '名称不明',
+                    subcategory: getSubcategoryFromRow(values, category),
+                    description: values[2] || '説明なし',
+                    members: parseInt(values[3]) || 0,
+                    foreignMembers: parseInt(values[4]) || 0,
+                    contact: values[5] || '',
+                    website: values[6] || '',
+                    events: values[7] || '',
+                    image: values[8] || ''
+                };
+                
+                circles.push(circle);
+            }
+            
+            return circles;
+        }
 
-  <script src="script.js" defer></script>
+        // Determine subcategory based on row data and category
+        function getSubcategoryFromRow(values, category) {
+            // For now, using a simple approach - you might need to adjust based on your actual data structure
+            if (category === 'sports') {
+                // Check which subcategory this circle belongs to based on position in CSV
+                // This is a simplified approach - you might need to adjust based on your actual CSV structure
+                const subcategories = SUBCATEGORIES.sports;
+                for (const subcat of subcategories) {
+                    if (values[1] && values[1].includes(subcat)) {
+                        return subcat;
+                    }
+                }
+            }
+            
+            // Default to first subcategory if none matched
+            return SUBCATEGORIES[category][0] || 'その他';
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Category buttons
+            categoryButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    categoryButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentCategory = this.dataset.category;
+                    currentSubcategory = null;
+                    renderSubcategories();
+                    filterAndRenderCircles();
+                });
+            });
+            
+            // Search
+            searchInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    filterAndRenderCircles();
+                }
+            });
+            
+            // Foreigner friendly toggle
+            foreignerFriendly.addEventListener('change', filterAndRenderCircles);
+            
+            // Sort buttons
+            sortMembersBtn.addEventListener('click', function() {
+                sortMembersBtn.classList.toggle('active');
+                sortForeignMembersBtn.classList.remove('active');
+                filterAndRenderCircles();
+            });
+            
+            sortForeignMembersBtn.addEventListener('click', function() {
+                sortForeignMembersBtn.classList.toggle('active');
+                sortMembersBtn.classList.remove('active');
+                filterAndRenderCircles();
+            });
+        }
+
+        // Render subcategory buttons based on current category
+        function renderSubcategories() {
+            const subcategories = SUBCATEGORIES[currentCategory] || [];
+            subcategoryContainer.innerHTML = '';
+            
+            subcategories.forEach(subcat => {
+                const button = document.createElement('button');
+                button.className = 'subcategory-btn';
+                button.textContent = subcat;
+                button.dataset.subcategory = subcat;
+                
+                if (currentSubcategory === subcat) {
+                    button.classList.add('active');
+                }
+                
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.subcategory-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    if (currentSubcategory === subcat) {
+                        currentSubcategory = null;
+                    } else {
+                        this.classList.add('active');
+                        currentSubcategory = subcat;
+                    }
+                    
+                    filterAndRenderCircles();
+                });
+                
+                subcategoryContainer.appendChild(button);
+            });
+        }
+
+        // Filter and render circles based on current filters
+        function filterAndRenderCircles() {
+            // Apply filters
+            filteredCircles = allCircles.filter(circle => {
+                // Category filter
+                if (circle.category !== currentCategory) return false;
+                
+                // Subcategory filter
+                if (currentSubcategory && circle.subcategory !== currentSubcategory) return false;
+                
+                // Foreigner friendly filter
+                if (foreignerFriendly.checked && circle.foreignMembers === 0) return false;
+                
+                // Search filter
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm && !circle.name.toLowerCase().includes(searchTerm) && 
+                    !circle.description.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // Apply sorting
+            if (sortMembersBtn.classList.contains('active')) {
+                filteredCircles.sort((a, b) => b.members - a.members);
+            } else if (sortForeignMembersBtn.classList.contains('active')) {
+                filteredCircles.sort((a, b) => b.foreignMembers - a.foreignMembers);
+            }
+            
+            // Reset to first page
+            currentPage = 1;
+            
+            // Render results
+            renderCircles();
+            renderPagination();
+            
+            // Show/hide no results message
+            if (filteredCircles.length === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+        }
+
+        // Render circles for current page
+        function renderCircles() {
+            const startIndex = (currentPage - 1) * circlesPerPage;
+            const endIndex = startIndex + circlesPerPage;
+            const circlesToShow = filteredCircles.slice(startIndex, endIndex);
+            
+            circleGrid.innerHTML = '';
+            
+            circlesToShow.forEach(circle => {
+                const card = document.createElement('div');
+                card.className = 'circle-card';
+                card.style.backgroundImage = `url(${circle.image || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'})`;
+                
+                card.innerHTML = `
+                    <div class="card-overlay">
+                        <div class="card-header">
+                            <div>
+                                <div class="circle-name">${circle.name}</div>
+                                <div class="circle-category">${circle.subcategory}</div>
+                            </div>
+                            ${circle.foreignMembers > 0 ? '<div class="foreigner-indicator" title="外国人メンバー在籍"></div>' : ''}
+                        </div>
+                        <div class="card-footer">
+                            <div class="member-count">メンバー: ${circle.members}</div>
+                            ${circle.foreignMembers > 0 ? `<div class="member-count">外国人: ${circle.foreignMembers}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => showExpandedView(circle));
+                circleGrid.appendChild(card);
+            });
+        }
+
+        // Render pagination
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredCircles.length / circlesPerPage);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = '';
+            
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `
+                    <button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            pagination.innerHTML = paginationHTML;
+            
+            // Add event listeners to page buttons
+            document.querySelectorAll('.page-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentPage = parseInt(this.dataset.page);
+                    renderCircles();
+                    renderPagination();
+                });
+            });
+        }
+
+        // Show expanded view of a circle
+        function showExpandedView(circle) {
+            const expandedView = document.createElement('div');
+            expandedView.className = 'card-expanded';
+            expandedView.innerHTML = `
+                <div class="expanded-content">
+                    <button class="close-btn">&times;</button>
+                    <div class="expanded-header" style="background-image: url(${circle.image || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'})">
+                        <div class="expanded-overlay">
+                            <h2>${circle.name}</h2>
+                            <p>${circle.subcategory} • メンバー: ${circle.members} ${circle.foreignMembers > 0 ? `• 外国人: ${circle.foreignMembers}` : ''}</p>
+                        </div>
+                    </div>
+                    <div class="expanded-body">
+                        <div class="expanded-section">
+                            <h3>説明</h3>
+                            <p>${circle.description || '説明はありません'}</p>
+                        </div>
+                        
+                        ${circle.contact ? `
+                        <div class="expanded-section">
+                            <h3>連絡先</h3>
+                            <div class="contact-info">
+                                <p>${circle.contact}</p>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${circle.events ? `
+                        <div class="expanded-section">
+                            <h3>イベント・活動</h3>
+                            <div class="event-info">
+                                <p>${circle.events}</p>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="action-buttons">
+                            ${circle.contact ? `<button class="action-btn">連絡する</button>` : ''}
+                            ${circle.website ? `<a href="${circle.website}" target="_blank" class="action-btn">ウェブサイト</a>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(expandedView);
+            
+            // Close on X button
+            expandedView.querySelector('.close-btn').addEventListener('click', () => {
+                document.body.removeChild(expandedView);
+            });
+            
+            // Close on outside click
+            expandedView.addEventListener('click', (e) => {
+                if (e.target === expandedView) {
+                    document.body.removeChild(expandedView);
+                }
+            });
+        }
+    </script>
 </body>
 </html>
