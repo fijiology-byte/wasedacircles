@@ -11,7 +11,7 @@
   --border: #e5e7eb;
 }
 
-/* Abstract font system: headings vs body */
+/* Base typography */
 html, body {
   margin: 0;
   padding: 0;
@@ -20,40 +20,25 @@ html, body {
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
   line-height: 1.4;
 }
-
-/* Secondary font applied to headings via class for abstract hierarchy */
 .h-heading {
   font-family: "IBM Plex Sans", "Inter", sans-serif;
   font-weight: 700;
 }
 
-/* Accessible focus styles */
-:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(122, 0, 38, 0.18);
-  border-radius: 6px;
-}
+/* Spec: hide focus outlines (cleaner look) */
+:focus { outline: none !important; box-shadow: none !important; }
 
-/* Visually hidden utility */
-.visually-hidden {
-  position: absolute !important;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0,0,0,0);
-  border: 0;
-}
-
-/* Top bar */
+/* Top bar: fixed, full-width */
 .topbar {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  top: 0; left: 0; right: 0;
   z-index: 1000;
   background: var(--white);
   border-bottom: 1px solid var(--border);
 }
 .topbar-inner {
   display: grid;
-  grid-template-columns: 1fr 2fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: 16px;
   align-items: center;
   padding: 10px 16px;
@@ -64,9 +49,7 @@ html, body {
   gap: 16px;
   min-width: 0;
 }
-.logo {
-  width: 36px; height: 36px; object-fit: contain;
-}
+.logo { width: 36px; height: 36px; object-fit: contain; }
 .top-links {
   display: flex;
   gap: 12px;
@@ -78,9 +61,7 @@ html, body {
   padding: 6px 8px;
   border-radius: 4px;
 }
-.top-links a:hover {
-  text-decoration: underline;
-}
+.top-links a:hover { text-decoration: underline; }
 
 .search-wrap {
   display: flex;
@@ -111,7 +92,8 @@ html, body {
   padding: 0 8px;
 }
 
-/* Layout */
+/* Layout (account for fixed topbar height) */
+body { padding-top: 64px; }
 .layout {
   display: grid;
   grid-template-columns: 280px 1fr;
@@ -138,12 +120,8 @@ html, body {
   padding: 6px 10px;
   cursor: pointer;
 }
-.filters {
-  margin-top: 10px;
-}
-.filter-group {
-  margin-bottom: 12px;
-}
+.filters { margin-top: 10px; }
+.filter-group { margin-bottom: 12px; }
 .filter-label {
   display: block;
   font-size: 12px;
@@ -162,10 +140,7 @@ html, body {
   align-items: center;
   gap: 8px;
 }
-.sort-row {
-  display: flex;
-  gap: 8px;
-}
+.sort-row { display: flex; gap: 8px; }
 .btn-outline {
   border: 1px solid var(--maroon);
   color: var(--maroon);
@@ -175,7 +150,7 @@ html, body {
   cursor: pointer;
 }
 
-/* Subcategories chips */
+/* Subcategory chips: vertical & circular */
 .subcat-header {
   display: flex;
   align-items: center;
@@ -183,22 +158,24 @@ html, body {
 }
 .subcats {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column; /* vertical stack */
   gap: 8px;
   margin-top: 10px;
 }
 .chip {
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 6px 12px;
+  border-radius: 50%;
   background: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
 /* Content */
-.content {
-  min-height: 60vh;
-}
+.content { min-height: 60vh; }
 
 /* Spinner and No Results */
 .spinner {
@@ -221,14 +198,14 @@ html, body {
 .grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
-  align-items: start;
+  gap: 8px; /* tight spacing */
+  align-items: start; /* top-aligned rows */
 }
 
 /* Breakpoints for tablet and mobile */
 @media (max-width: 1080px) {
   .grid { grid-template-columns: repeat(3, 1fr); }
-  .topbar-inner { grid-template-columns: 1fr 1fr auto; }
+  .topbar-inner { grid-template-columns: auto 1fr auto; }
 }
 @media (max-width: 640px) {
   .layout { grid-template-columns: 1fr; }
@@ -240,7 +217,8 @@ html, body {
   position: relative;
   background: var(--white);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0; /* square corners per spec */
+  box-shadow: none; /* flat style per spec */
   overflow: hidden;
 }
 
@@ -263,12 +241,8 @@ html, body {
   text-align: center;
   padding: 10px 8px;
 }
-.card-strip-top {
-  border-bottom: 1px solid rgba(255,255,255,0.15);
-}
-.card-strip-bottom {
-  border-top: 1px solid rgba(255,255,255,0.15);
-}
+.card-strip-top { border-bottom: 1px solid rgba(255,255,255,0.15); }
+.card-strip-bottom { border-top: 1px solid rgba(255,255,255,0.15); }
 
 /* Body area to anchor overlay expansion */
 .card-body {
@@ -287,15 +261,14 @@ html, body {
 }
 .card-overlay.hidden { display: none; }
 
+/* Overlay header & actions */
 .overlay-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
 }
-.overlay-title {
-  font-weight: 700;
-}
+.overlay-title { font-weight: 700; }
 .overlay-close {
   background: var(--white);
   border: 1px solid var(--border);
@@ -303,8 +276,6 @@ html, body {
   padding: 4px 8px;
   cursor: pointer;
 }
-
-/* Expanded footer with outlined action buttons */
 .overlay-actions {
   display: flex;
   flex-wrap: wrap;
@@ -321,10 +292,7 @@ html, body {
 }
 
 /* Metadata text accents */
-.meta {
-  color: var(--gray);
-  font-size: 12px;
-}
+.meta { color: var(--gray); font-size: 12px; }
 .badge-green { color: var(--muted-green); }
 .badge-blue { color: var(--muted-blue); }
 
@@ -360,11 +328,9 @@ html, body {
   padding: 12px 16px;
   overflow-x: auto;
 }
-.logo-footer {
-  width: 32px; height: 32px;
-}
+.logo-footer { width: 32px; height: 32px; }
 
-/* Utility: clickable outside close area */
+/* Utility: clickable outside close area (used programmatically) */
 .card-click-shield {
   position: absolute;
   inset: 0;
