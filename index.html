@@ -1,132 +1,114 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Waseda Student Circle Directory</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>早稲田サークルディレクトリ</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=IBM+Plex+Sans:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Top navigation bar (fixed, full-width) -->
-  <header class="topbar">
+  <!-- Top Navigation (fixed) -->
+  <header class="topbar" role="banner">
     <div class="topbar-inner">
-      <div class="logo-group">
-        <img src="assets/waseda-logo.svg" alt="Waseda University logo" class="logo" />
-        <nav class="top-links" role="navigation" aria-label="Main navigation">
-          <a href="#">Home</a>
-          <a href="#">About</a>
-          <a href="#">FAQs</a>
-        </nav>
+      <div class="brand">
+        <img src="assets/logo.svg" alt="Waseda logo" class="logo" />
       </div>
 
-      <!-- Search: full-width within middle column, applies on Enter -->
-      <form id="searchForm" class="search-wrap" role="search" aria-label="Search circles">
-        <input id="searchInput" type="search" placeholder="Search circles..." aria-label="Search circles" />
-        <button type="submit" class="btn-search">Search</button>
-      </form>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#" class="nav-item">Home</a>
+        <a href="#" class="nav-item">About</a>
+        <a href="#" class="nav-item">FAQs</a>
+      </nav>
 
-      <!-- Language selector: reloads page on toggle -->
-      <div class="lang-wrap">
-        <select id="langSelect" aria-label="Select language">
-          <option value="en" selected>English</option>
-          <option value="ja">日本語</option>
+      <div class="search-language">
+        <form id="searchForm" class="search-form" role="search" aria-label="Search circles">
+          <input id="searchInput" type="search" placeholder="サークルを検索..." aria-label="Search input" />
+          <button type="submit" aria-label="Search button">検索</button>
+        </form>
+
+        <select id="langSelect" aria-label="Language selector" title="Language">
+          <option value="ja" selected>日本語</option>
+          <option value="en">English</option>
         </select>
       </div>
     </div>
   </header>
 
-  <main class="layout">
-    <!-- Sidebar filters -->
-    <aside class="sidebar" aria-labelledby="filtersHeading">
-      <div class="filter-header">
-        <h2 id="filtersHeading" class="h-heading">Filters</h2>
-        <button id="toggleFilters" class="btn-toggle" aria-expanded="true" aria-controls="filtersPanel">Collapse</button>
-      </div>
+  <!-- Main layout -->
+  <main class="main" role="main">
+    <aside class="sidebar" id="sidebar" aria-label="Filters">
+      <div class="sidebar-inner">
+        <h3>Filters</h3>
 
-      <div id="filtersPanel" class="filters">
-        <!-- Three-level dropdowns -->
-        <div class="filter-group">
-          <label class="filter-label" for="filterCategory">Category</label>
-          <select id="filterCategory">
-            <option value="">All</option>
-            <option value="sports">Ball Sports</option>
-            <option value="culture">Non-Ball Sports</option>
-            <option value="tech">Academics</option>
-            <option value="tech">Media and Publishing</option>
-            <option value="tech">Culture and Arts </option>
-            <option value="tech">International Exchange and Volunteer</option>
-            <option value="tech">Others</option>
-            
-          </select>
-        </div>
-        <div class="filter-group">
-          <label class="filter-label" for="filterSubcategory">Sub-category</label>
-          <select id="filterSubcategory">
-            <option value="">All</option>
-            <option value="music">Music</option>
-            <option value="dance">Dance</option>
-            <option value="photography">Photography</option>
-            <option value="art">Art</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label class="filter-label" for="filterLevel">Level</label>
-          <select id="filterLevel">
-            <option value="">All</option>
-            <option value="beginner">Beginner</option>
-            <option value="advanced">Advanced</option>
-          </select>
-        </div>
-
-        <!-- Foreigner-friendly toggle -->
-        <div class="filter-group">
-          <label class="filter-checkbox" for="filterForeignerFriendly">
-            <input type="checkbox" id="filterForeignerFriendly" />
-            <span>Foreigner-friendly</span>
+        <div class="filter-row">
+          <label class="toggle">
+            <input id="foreignerToggle" type="checkbox" />
+            <span>外国人受け入れあり</span>
           </label>
         </div>
 
-        <!-- Sort Min ↔ Max (members) -->
-        <div class="filter-group">
-          <label class="filter-label">Sort by members</label>
-          <button id="sortMembers" class="btn-outline" data-sort="asc" type="button" aria-pressed="false">Min → Max</button>
+        <div class="filter-row">
+          <label for="categorySelect">カテゴリ</label>
+          <select id="categorySelect">
+            <option value="">-- 選択してください --</option>
+            <option value="sports_nonball">スポーツ(球技以外)</option>
+            <option value="gakumon">学問</option>
+            <option value="media">メディア・出版</option>
+            <option value="culture">文化・芸術</option>
+            <option value="other">その他</option>
+          </select>
         </div>
 
-        <!-- Sub-category circular chips, vertical, expandable -->
-        <div class="filter-group">
-          <div class="subcat-header">
-            <span class="filter-label">Quick sub-category</span>
-            <button id="toggleSubcats" class="btn-toggle" type="button" aria-controls="subcatList" aria-expanded="false">Expand</button>
-          </div>
-          <div class="subcats" id="subcatList" aria-expanded="false"></div>
+        <div class="filter-row">
+          <label for="subcategorySelect">サブカテゴリ</label>
+          <select id="subcategorySelect" disabled>
+            <option value="">-- カテゴリを選んでください --</option>
+          </select>
+        </div>
+
+        <div class="filter-row">
+          <label>並び替え (所属人数)</label>
+          <button id="sortToggle" class="sort-btn" data-order="desc">Max ↔ Min</button>
+        </div>
+
+        <div class="subcategories">
+          <button class="circle-btn" data-value="">全て</button>
+          <button class="circle-btn" data-value="バドミントン">バドミントン</button>
+          <button class="circle-btn" data-value="ダンス">ダンス</button>
         </div>
       </div>
     </aside>
 
-    <!-- Content -->
-    <section class="content" aria-live="polite">
-      <div id="spinner" class="spinner" hidden></div>
-      <div id="noResults" class="no-results" hidden>No results</div>
-      <div id="cardGrid" class="grid" role="list"></div>
+    <section class="content" id="content" aria-live="polite">
+      <div id="states" class="states">
+        <div id="loading" class="state loading">読み込み中…</div>
+        <div id="error" class="state error" hidden>データの読み込みに失敗しました。</div>
+        <div id="noresults" class="state noresults" hidden>該当する結果はありません。</div>
+      </div>
+
+      <div id="grid" class="grid" role="list"></div>
+
       <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
     </section>
   </main>
 
-  <!-- Footer -->
-  <footer class="footer">
+  <footer class="footer" role="contentinfo">
     <div class="footer-inner">
-      <img src="assets/waseda-logo.svg" alt="Waseda University logo" class="logo-footer" />
-      <a href="#">Home</a>
-      <a href="#">About</a>
-      <a href="#">FAQs</a>
-      <select id="langSelectFooter" aria-label="Select language footer">
-        <option value="en" selected>English</option>
-        <option value="ja">日本語</option>
-      </select>
+      <img src="assets/logo.svg" alt="Waseda logo" class="logo footer-logo" />
+      <nav class="footer-links">
+        <a href="#">Home</a>
+        <a href="#">About</a>
+        <a href="#">FAQs</a>
+      </nav>
+      <div class="footer-lang">
+        <select id="footerLang" aria-label="Footer language selector">
+          <option value="ja" selected>日本語</option>
+          <option value="en">English</option>
+        </select>
+      </div>
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
