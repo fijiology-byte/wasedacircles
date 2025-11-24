@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=IBM+Plex+Sans:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Top navigation bar -->
+  <!-- Top navigation bar (fixed, full-width) -->
   <header class="topbar">
     <div class="topbar-inner">
       <div class="logo-group">
@@ -20,13 +20,13 @@
         </nav>
       </div>
 
-      <!-- Search -->
+      <!-- Search: full-width within middle column, applies on Enter -->
       <form id="searchForm" class="search-wrap" role="search" aria-label="Search circles">
         <input id="searchInput" type="search" placeholder="Search circles..." aria-label="Search circles" />
         <button type="submit" class="btn-search">Search</button>
       </form>
 
-      <!-- Language selector -->
+      <!-- Language selector: reloads page on toggle -->
       <div class="lang-wrap">
         <select id="langSelect" aria-label="Select language">
           <option value="en" selected>English</option>
@@ -40,10 +40,12 @@
     <!-- Sidebar filters -->
     <aside class="sidebar" aria-labelledby="filtersHeading">
       <div class="filter-header">
-        <h2 id="filtersHeading">Filters</h2>
+        <h2 id="filtersHeading" class="h-heading">Filters</h2>
         <button id="toggleFilters" class="btn-toggle" aria-expanded="true" aria-controls="filtersPanel">Collapse</button>
       </div>
+
       <div id="filtersPanel" class="filters">
+        <!-- Three-level dropdowns -->
         <div class="filter-group">
           <label class="filter-label" for="filterCategory">Category</label>
           <select id="filterCategory">
@@ -54,11 +56,13 @@
           </select>
         </div>
         <div class="filter-group">
-          <label class="filter-label" for="filterSubcategory">Circle sub-category</label>
+          <label class="filter-label" for="filterSubcategory">Sub-category</label>
           <select id="filterSubcategory">
             <option value="">All</option>
             <option value="music">Music</option>
             <option value="dance">Dance</option>
+            <option value="photography">Photography</option>
+            <option value="art">Art</option>
           </select>
         </div>
         <div class="filter-group">
@@ -69,15 +73,28 @@
             <option value="advanced">Advanced</option>
           </select>
         </div>
+
+        <!-- Foreigner-friendly toggle -->
         <div class="filter-group">
-          <label class="filter-checkbox">
+          <label class="filter-checkbox" for="filterForeignerFriendly">
             <input type="checkbox" id="filterForeignerFriendly" />
             <span>Foreigner-friendly</span>
           </label>
         </div>
+
+        <!-- Sort Min ↔ Max (members) -->
         <div class="filter-group">
           <label class="filter-label">Sort by members</label>
           <button id="sortMembers" class="btn-outline" data-sort="asc" type="button" aria-pressed="false">Min → Max</button>
+        </div>
+
+        <!-- Sub-category circular chips, vertical, expandable -->
+        <div class="filter-group">
+          <div class="subcat-header">
+            <span class="filter-label">Quick sub-category</span>
+            <button id="toggleSubcats" class="btn-toggle" type="button" aria-controls="subcatList" aria-expanded="false">Expand</button>
+          </div>
+          <div class="subcats" id="subcatList" aria-expanded="false"></div>
         </div>
       </div>
     </aside>
