@@ -1,306 +1,404 @@
 // script.js
-// Fetch published Google Sheets (pubhtml) and render into the existing UI.
-// Expects first row of each sheet to be headers: 名前, 活動内容, 活動日時、場所, 所属人数, 外国人学生の受け入れ
-// If a sheet has no data rows (only header or empty), it is treated as "work in progress" and skipped.
+// Replace this CSV URL if you publish a different sheet or use a sheet gid per sheet.
+// Default uses the CSV published link you provided earlier (change if needed).
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLZ5vNZ0qR0Y6cHeON5BkK5NDrOblOq9GIfVHwoosehKh9d_wuCGUzr7M5xsmbw8kYKntJHcQ-Dszz/pub?output=csv";
 
-const CONFIG = {
-  sheetsUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vROISh1dscDOa7SnWAyXDSoXT0s6pZ_cQuic8i9LN937Xpx3SoxkR-g_hvMjGXwRwBx41HhMcBRCTUM/pubhtml",
-  pageSize: 18,
-  expectedHeaders: ["名前", "活動内容", "活動日時、場所", "所属人数", "外国人学生の受け入れ"]
+// UI elements
+const grid = document.getElementById('grid');
+const loadingEl = document.getElementById('loading');
+const errorEl = document.getElementById('error');
+const noresultsEl = document.getElementById('noresults');
+const paginationEl = document.getElementById('pagination');
+const searchForm = document.getElementById('searchForm');
+const searchInput = document.getElementById('searchInput');
+const foreignerToggle = document.getElementById('foreignerToggle');
+const categorySelect = document.getElementById('categorySelect');
+const subcategorySelect = document.getElementById('subcategorySelect');
+const sortToggle = document.getElementById('sortToggle');
+const circleBtns = document.querySelectorAll('.circle-btn');
+
+let rawRows = []; // raw CSV rows as objects
+let records = []; // normalized records
+let pageSize = 12;
+let currentPage = 1;
+let currentFilter = { query: '', foreigner: false, category: '', subcategory: '', circleBtn: '' };
+let sortOrder = 'desc'; // 'desc' or 'asc'
+let smallestNumeric = null;
+let unknownValue = 1; // will be computed
+
+// Static mapping for category -> subcategories (you provided ranges; this is a simplified mapping)
+const SUBCATEGORY_MAP = {
+  "sports_nonball": [
+    "バドミントン","ダンス","武道","乗馬","ヨット","スキー","水泳","サイクリング","アウトドア","そのほかのスポーツ"
+  ],
+  "gakumon":[
+    "政治","経済","歴史","宗教","哲学","法律","自然科学","言語","日本文学","日本文化","学問","趣味","技術"
+  ],
+  "media":["出版 / Publication","コミュニケーション / Communication","マスメディア / Media","企画 / Planning","レクリエーション / Recreation"],
+  "culture":["舞台芸術","演劇","映画","音楽","声楽","美術","その他の文化"],
+  "other":["学生稲門会"]
 };
 
-let data = [];
-let filtered = [];
-let currentPage = 1;
-let sortAsc = true;
-
-const grid = document.getElementById("cardGrid");
-const spinner = document.getElementById("spinner");
-const noResults = document.getElementById("noResults");
-const pagination = document.getElementById("pagination");
-const searchForm = document.getElementById("searchForm");
-const searchInput = document.getElementById("searchInput");
-const foreignCheckbox = document.getElementById("filterForeignerFriendly");
-const sortBtn = document.getElementById("sortMembers");
-
-// Utility: text content trimmed
-function textOf(node){
-  return node ? node.textContent.trim() : "";
-}
-
-// Parse published Google Sheets HTML and extract tables
-async function fetchSheetsHtml(url){
-  spinner.hidden = false;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to fetch sheet");
-    const html = await res.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    // Google published HTML often uses <table class="waffle"> for each sheet
-    const tables = Array.from(doc.querySelectorAll("table.waffle, table"));
-    const sheets = [];
-    tables.forEach((table) => {
-      // Extract rows
-      const rows = Array.from(table.querySelectorAll("tr"));
-      if (rows.length === 0) return;
-      // First row = header
-      const headerCells = Array.from(rows[0].querySelectorAll("th,td")).map(textOf);
-      // Data rows
-      const dataRows = rows.slice(1).map(r => Array.from(r.querySelectorAll("td")).map(textOf));
-      // If there are no non-empty data rows, treat as empty sheet (work in progress)
-      const hasData = dataRows.some(cols => cols.some(c => c !== ""));
-      if (!hasData) return; // skip empty sheet
-      sheets.push({ header: headerCells, rows: dataRows });
-    });
-    return sheets;
-  } catch (err) {
-    console.error("fetchSheetsHtml error:", err);
-    throw err;
-  } finally {
-    spinner.hidden = true;
-  }
-}
-
-// Convert sheets (multiple) into unified data array of objects
-function sheetsToData(sheets){
-  const out = [];
-  sheets.forEach(sheet => {
-    const header = sheet.header;
-    sheet.rows.forEach(row => {
-      // Skip completely empty rows
-      if (row.every(cell => cell === "")) return;
-      const obj = {};
-      // Try to map by header names first (exact match), otherwise by index
-      CONFIG.expectedHeaders.forEach((expected, idx) => {
-        // find index of expected header in header row
-        const foundIndex = header.findIndex(h => h.trim() === expected);
-        if (foundIndex !== -1) {
-          obj[expected] = row[foundIndex] || "";
-        } else {
-          // fallback: use same index position if header length matches
-          obj[expected] = row[idx] || "";
-        }
-      });
-      // Optional: if sheet contains extra columns like image_url, category1, etc., try to capture them
-      header.forEach((h, i) => {
-        const key = h || `col_${i}`;
-        if (!CONFIG.expectedHeaders.includes(key)) {
-          obj[key] = row[i] || "";
-        }
-      });
-      out.push(obj);
-    });
-  });
-  return out;
-}
-
-// Apply search and filters to `data` -> `filtered`
-function applyFiltersAndSearch(){
-  const q = (searchInput.value || "").trim().toLowerCase();
-  const foreignOnly = foreignCheckbox ? foreignCheckbox.checked : false;
-  filtered = data.filter(item => {
-    // foreigner-friendly filter: match "可" or "yes" or "true" (case-insensitive)
-    if (foreignOnly) {
-      const val = (item["外国人学生の受け入れ"] || "").toString().trim().toLowerCase();
-      if (!(val === "可" || val === "yes" || val === "true" || val === "y")) return false;
+// Utility: simple CSV parser (handles quoted fields minimally)
+function parseCSV(text){
+  const lines = text.split(/\r?\n/).filter(Boolean);
+  if(lines.length === 0) return [];
+  const headers = splitCSVLine(lines[0]);
+  const rows = [];
+  for(let i=1;i<lines.length;i++){
+    const cols = splitCSVLine(lines[i]);
+    const obj = {};
+    for(let j=0;j<headers.length;j++){
+      obj[headers[j].trim()] = (cols[j] || '').trim();
     }
-    if (!q) return true;
-    // search across 名前 and 活動内容 and other text fields
-    const hay = [
-      item["名前"],
-      item["活動内容"],
-      item["活動日時、場所"]
-    ].filter(Boolean).join(" ").toLowerCase();
-    return hay.includes(q);
-  });
-
-  // sort by 所属人数 numeric if present
-  filtered.sort((a,b) => {
-    const na = parseInt((a["所属人数"]||"").replace(/[^\d-]/g,""),10) || 0;
-    const nb = parseInt((b["所属人数"]||"").replace(/[^\d-]/g,""),10) || 0;
-    return sortAsc ? na - nb : nb - na;
-  });
-
-  currentPage = 1;
+    rows.push(obj);
+  }
+  return rows;
+}
+function splitCSVLine(line){
+  const result = [];
+  let cur = '', inQuotes = false;
+  for(let i=0;i<line.length;i++){
+    const ch = line[i];
+    if(ch === '"' ){ inQuotes = !inQuotes; continue; }
+    if(ch === ',' && !inQuotes){ result.push(cur); cur=''; continue; }
+    cur += ch;
+  }
+  result.push(cur);
+  return result;
 }
 
-// Render grid page
-function render(){
-  applyFiltersAndSearch();
-  grid.innerHTML = "";
-  if (!filtered.length) {
-    noResults.hidden = false;
-    pagination.innerHTML = "";
+// Normalization helpers
+function extractNumbersFromText(text){
+  if(!text) return [];
+  // normalize full-width digits
+  text = text.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+  // find all numbers
+  const nums = [...text.matchAll(/(\d+)/g)].map(m => Number(m[1]));
+  return nums;
+}
+function parseMemberField(raw){
+  if(!raw) return { raw:'', min:null, max:null, normalized:null, display:'' };
+  const s = raw.trim();
+  if(s === '情報なし' || s === '書いていない' || s === '不明') {
+    return { raw:s, min:null, max:null, normalized:null, display:s };
+  }
+  // extract numbers
+  const nums = extractNumbersFromText(s);
+  if(nums.length === 0){
+    // no explicit number -> treat as unknown (will be assigned later)
+    return { raw:s, min:null, max:null, normalized:null, display:s };
+  }
+  if(nums.length === 1){
+    // single number (may be approximate like 約100人)
+    const n = nums[0];
+    return { raw:s, min:n, max:n, normalized:n, display:s };
+  }
+  // multiple numbers -> treat as range: take first and last
+  const min = nums[0];
+  const max = nums[nums.length-1];
+  return { raw:s, min:min, max:max, normalized:(min+max)/2, display:s };
+}
+
+// Compute smallest numeric > 0 across sheet
+function computeSmallestNumeric(records){
+  let min = Infinity;
+  records.forEach(r=>{
+    if(r.members && typeof r.members === 'number' && r.members > 0){
+      if(r.members < min) min = r.members;
+    }
+    // also consider members_min if present
+    if(r.members_min && typeof r.members_min === 'number' && r.members_min > 0){
+      if(r.members_min < min) min = r.members_min;
+    }
+  });
+  return (min === Infinity) ? null : min;
+}
+
+// Assign unknown value: smallest positive less than smallestNumeric
+function assignUnknownValue(smallest){
+  if(!smallest || smallest <= 1) return 0.5;
+  return smallest / 2;
+}
+
+// Convert a CSV row object to normalized record used by UI
+function normalizeRow(row){
+  // expected headers: 名前, スポーツ種類, 活動内容, 活動日時、場所, 所属人数, 外国人学生の受け入れ, 画像URL, サブカテゴリコード
+  const name = row['名前'] || row['Name'] || '';
+  const type = row['スポーツ種類'] || row['Type'] || '';
+  const activity = row['活動内容'] || row['Activity'] || '';
+  const schedule = row['活動日時、場所'] || row['活動日時、場所'] || row['Schedule'] || '';
+  const membersRaw = row['所属人数'] || row['Members'] || '';
+  const foreignRaw = row['外国人学生の受け入れ'] || row['Foreign'] || '';
+  const image = row['画像URL'] || row['Image'] || '';
+  const subcode = row['サブカテゴリコード'] || row['SubcategoryCode'] || '';
+
+  const membersParsed = parseMemberField(membersRaw);
+  const foreignParsed = parseMemberField(foreignRaw);
+
+  return {
+    name, type, activity, schedule,
+    members_raw: membersParsed.raw,
+    members_min: membersParsed.min,
+    members_max: membersParsed.max,
+    members: membersParsed.normalized,
+    members_display: membersParsed.display || membersRaw,
+    foreign_raw: foreignParsed.raw,
+    foreign_min: foreignParsed.min,
+    foreign_max: foreignParsed.max,
+    foreign: foreignParsed.normalized,
+    foreign_display: foreignParsed.display || foreignRaw,
+    image: image || 'assets/fallback.jpg',
+    subcode
+  };
+}
+
+// Render functions
+function renderGrid(recordsToShow){
+  grid.innerHTML = '';
+  if(recordsToShow.length === 0){
+    noresultsEl.hidden = false;
     return;
   } else {
-    noResults.hidden = true;
+    noresultsEl.hidden = true;
   }
 
-  const start = (currentPage - 1) * CONFIG.pageSize;
-  const pageItems = filtered.slice(start, start + CONFIG.pageSize);
+  recordsToShow.forEach((rec, idx) => {
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.style.backgroundImage = `url("${rec.image}")`;
+    card.setAttribute('role','listitem');
 
-  pageItems.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    // background image: try common keys (image_url, Image, 画像)
-    const imageCandidates = ["image_url","Image","画像","image","写真"];
-    let image = null;
-    for (const k of imageCandidates) {
-      if (item[k]) { image = item[k]; break; }
-    }
-    if (!image) image = "assets/campus-fallback.jpg";
-
-    const bg = document.createElement("div");
-    bg.className = "card-bg";
-    bg.style.backgroundImage = `url('${image}')`;
-    card.appendChild(bg);
-
-    // top strip (name)
-    const topStrip = document.createElement("div");
-    topStrip.className = "card-strip-top";
-    topStrip.textContent = item["名前"] || "—";
+    // top strip
+    const topStrip = document.createElement('div');
+    topStrip.className = 'strip-top';
+    topStrip.textContent = rec.name || '無名';
     card.appendChild(topStrip);
 
-    // body area (anchor for overlay)
-    const body = document.createElement("div");
-    body.className = "card-body";
-    // meta line
-    const meta = document.createElement("div");
-    meta.className = "meta";
-    const whenWhere = item["活動日時、場所"] || "";
-    const members = item["所属人数"] || "";
-    meta.textContent = `${whenWhere}${whenWhere && members ? " · " : ""}${members ? members + " members" : ""}`;
-    body.appendChild(meta);
-    card.appendChild(body);
-
-    // bottom strip (activity)
-    const bottomStrip = document.createElement("div");
-    bottomStrip.className = "card-strip-bottom";
-    bottomStrip.textContent = item["活動内容"] || "";
+    // meta strip bottom
+    const bottomStrip = document.createElement('div');
+    bottomStrip.className = 'strip-bottom';
+    bottomStrip.textContent = `${rec.type || ''} ・ ${rec.members_display || '情報なし'}`;
     card.appendChild(bottomStrip);
 
-    // overlay (hidden by default)
-    const overlay = document.createElement("div");
-    overlay.className = "card-overlay hidden";
-    overlay.innerHTML = `
-      <div class="overlay-header">
-        <div class="overlay-title">${escapeHtml(item["名前"] || "")}</div>
-        <button class="overlay-close" aria-label="Close">X</button>
-      </div>
-      <div class="overlay-body">
-        <p>${escapeHtml(item["活動内容"] || "")}</p>
-        <p class="meta">${escapeHtml(item["活動日時、場所"] || "")}</p>
-        <p>Foreign friendly: ${escapeHtml(item["外国人学生の受け入れ"] || "")}</p>
-      </div>
-      <div class="overlay-actions">
-        <a class="btn-action" href="#" target="_blank" rel="noopener">Contact</a>
-        <a class="btn-action" href="#" target="_blank" rel="noopener">Link</a>
-      </div>
+    // hidden expanded content
+    const expanded = document.createElement('div');
+    expanded.className = 'expanded-content';
+    expanded.innerHTML = `
+      <div class="meta"><strong>活動内容:</strong> ${rec.activity || '情報なし'}</div>
+      <div class="meta"><strong>日時・場所:</strong> ${rec.schedule || '情報なし'}</div>
+      <div class="meta"><strong>所属人数:</strong> ${rec.members_display || '情報なし'}</div>
+      <div class="meta"><strong>外国人受け入れ:</strong> ${rec.foreign_display || '情報なし'}</div>
     `;
-    card.appendChild(overlay);
+    const footer = document.createElement('div');
+    footer.className = 'expanded-footer';
+    footer.innerHTML = `
+      <a class="action-btn" href="#" target="_blank" rel="noopener">Contact</a>
+      <a class="action-btn" href="#" target="_blank" rel="noopener">Link</a>
+    `;
+    expanded.appendChild(footer);
+    card.appendChild(expanded);
 
-    // click to toggle overlay (instant, no animation)
-    card.addEventListener("click", (ev) => {
-      // ignore clicks on overlay links or close button
-      if (ev.target.tagName === "A" || ev.target.classList.contains("overlay-close")) return;
-      // close other overlays
-      document.querySelectorAll(".card-overlay").forEach(o => o.classList.add("hidden"));
-      overlay.classList.toggle("hidden");
+    // click to expand inline (instant)
+    card.addEventListener('click', (e)=>{
+      // if clicking a link inside footer, let it proceed
+      if(e.target.tagName.toLowerCase() === 'a') return;
+      const isExpanded = card.classList.contains('expanded');
+      // close any other expanded
+      document.querySelectorAll('.card.expanded').forEach(c=>c.classList.remove('expanded'));
+      if(!isExpanded) card.classList.add('expanded');
+      else card.classList.remove('expanded');
     });
 
-    // close button
-    overlay.querySelector(".overlay-close").addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      overlay.classList.add("hidden");
-    });
-
-    // outside click closes overlays: listen once per document
-    document.addEventListener("click", (ev) => {
-      // if click is outside any card, close all overlays
-      const anyCard = ev.target.closest(".card");
-      if (!anyCard) {
-        document.querySelectorAll(".card-overlay").forEach(o => o.classList.add("hidden"));
+    // outside click to close (listen on document)
+    document.addEventListener('click', (ev)=>{
+      if(!card.contains(ev.target) && card.classList.contains('expanded')){
+        card.classList.remove('expanded');
       }
     });
 
     grid.appendChild(card);
   });
-
-  renderPagination();
 }
 
-function renderPagination(){
-  const totalPages = Math.ceil(filtered.length / CONFIG.pageSize) || 1;
-  pagination.innerHTML = "";
-  for (let i = 1; i <= totalPages; i++){
-    const btn = document.createElement("button");
-    btn.className = "page-btn" + (i === currentPage ? " active" : "");
+// Pagination
+function paginate(array, page = 1, size = pageSize){
+  const start = (page-1)*size;
+  return array.slice(start, start+size);
+}
+function renderPagination(total, page){
+  paginationEl.innerHTML = '';
+  const pages = Math.ceil(total / pageSize);
+  if(pages <= 1) return;
+  for(let i=1;i<=pages;i++){
+    const btn = document.createElement('button');
     btn.textContent = i;
-    btn.disabled = (i === currentPage);
-    btn.addEventListener("click", () => {
+    if(i === page) btn.disabled = true;
+    btn.addEventListener('click', ()=> {
       currentPage = i;
-      render();
-      window.scrollTo({ top: 0, behavior: "instant" });
+      applyAndRender();
+      window.scrollTo({top:120, behavior:'instant'});
     });
-    pagination.appendChild(btn);
+    paginationEl.appendChild(btn);
   }
 }
 
-// Escape HTML for safety
-function escapeHtml(s){
-  if (!s) return "";
-  return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
-}
+// Filtering & sorting
+function applyFilters(records){
+  let out = records.slice();
 
-// Initialize: fetch sheets and render
-async function init(){
-  try {
-    spinner.hidden = false;
-    const sheets = await fetchSheetsHtml(CONFIG.sheetsUrl);
-    if (!sheets || sheets.length === 0) {
-      // No non-empty sheets found
-      data = [];
-      filtered = [];
-      render();
-      return;
+  // search query (applies on name, activity, type)
+  const q = currentFilter.query.trim().toLowerCase();
+  if(q){
+    out = out.filter(r => (r.name && r.name.toLowerCase().includes(q)) ||
+                         (r.activity && r.activity.toLowerCase().includes(q)) ||
+                         (r.type && r.type.toLowerCase().includes(q)));
+  }
+
+  // foreigner toggle: require foreign > 0
+  if(currentFilter.foreigner){
+    out = out.filter(r => {
+      // if foreign is null but foreign_min exists, use that; else treat unknown as unknown (we treat unknown as positive later)
+      return (typeof r.foreign === 'number' && r.foreign > 0) || (typeof r.foreign_min === 'number' && r.foreign_min > 0);
+    });
+  }
+
+  // category/subcategory filtering: we use type (スポーツ種類) or subcode if available
+  if(currentFilter.subcategory){
+    out = out.filter(r => (r.type && r.type === currentFilter.subcategory));
+  } else if(currentFilter.category){
+    // if category selected but no subcategory, filter by known subcategory list
+    const list = SUBCATEGORY_MAP[currentFilter.category] || [];
+    if(list.length) out = out.filter(r => list.includes(r.type));
+  }
+
+  // circle button quick filter (exact match on type)
+  if(currentFilter.circleBtn){
+    out = out.filter(r => r.type === currentFilter.circleBtn);
+  }
+
+  // sort by members (use normalized members; unknowns will be assigned unknownValue)
+  out.forEach(r => {
+    if(typeof r.members !== 'number' || r.members === null){
+      r._members_for_sort = unknownValue;
+    } else {
+      r._members_for_sort = r.members;
     }
-    data = sheetsToData(sheets);
-    filtered = data.slice();
-    currentPage = 1;
-    render();
-  } catch (err) {
-    console.error("Initialization error:", err);
-    noResults.hidden = false;
-    noResults.textContent = "Failed to load sheet data. If the sheet is private or not published as HTML, publish it (File → Publish to web) or use the CSV publish option.";
-  } finally {
-    spinner.hidden = true;
-  }
+  });
+
+  out.sort((a,b)=>{
+    if(sortOrder === 'desc') return b._members_for_sort - a._members_for_sort;
+    return a._members_for_sort - b._members_for_sort;
+  });
+
+  return out;
 }
 
-// Event handlers
-searchForm.addEventListener("submit", (e) => {
+// Apply filters, paginate, render
+function applyAndRender(){
+  const filtered = applyFilters(records);
+  const total = filtered.length;
+  const pageRecords = paginate(filtered, currentPage, pageSize);
+  renderGrid(pageRecords);
+  renderPagination(total, currentPage);
+}
+
+// Event wiring
+searchForm.addEventListener('submit', (e)=>{
   e.preventDefault();
-  applyFiltersAndSearch();
-  render();
+  currentFilter.query = searchInput.value || '';
+  currentPage = 1;
+  applyAndRender();
 });
 
-if (foreignCheckbox) {
-  foreignCheckbox.addEventListener("change", () => {
-    applyFiltersAndSearch();
-    render();
+foreignerToggle.addEventListener('change', ()=>{
+  currentFilter.foreigner = foreignerToggle.checked;
+  currentPage = 1;
+  applyAndRender();
+});
+
+categorySelect.addEventListener('change', ()=>{
+  const key = categorySelect.value;
+  currentFilter.category = key;
+  currentFilter.subcategory = '';
+  // populate subcategory select
+  populateSubcategories(key);
+  currentPage = 1;
+  applyAndRender();
+});
+
+subcategorySelect.addEventListener('change', ()=>{
+  currentFilter.subcategory = subcategorySelect.value;
+  currentPage = 1;
+  applyAndRender();
+});
+
+sortToggle.addEventListener('click', ()=>{
+  sortOrder = (sortOrder === 'desc') ? 'asc' : 'desc';
+  sortToggle.textContent = (sortOrder === 'desc') ? 'Max ↔ Min' : 'Min ↔ Max';
+  applyAndRender();
+});
+
+circleBtns.forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const val = b.dataset.value || '';
+    currentFilter.circleBtn = val;
+    currentPage = 1;
+    applyAndRender();
+  });
+});
+
+// Populate subcategories (static mapping)
+function populateSubcategories(categoryKey){
+  subcategorySelect.innerHTML = '';
+  if(!categoryKey || !SUBCATEGORY_MAP[categoryKey]){
+    subcategorySelect.disabled = true;
+    subcategorySelect.innerHTML = '<option value="">-- カテゴリを選んでください --</option>';
+    return;
+  }
+  subcategorySelect.disabled = false;
+  subcategorySelect.appendChild(new Option('-- 全て --', ''));
+  SUBCATEGORY_MAP[categoryKey].forEach(label=>{
+    subcategorySelect.appendChild(new Option(label, label));
   });
 }
 
-if (sortBtn) {
-  sortBtn.addEventListener("click", () => {
-    sortAsc = !sortAsc;
-    sortBtn.textContent = sortAsc ? "Min → Max" : "Max → Min";
-    applyFiltersAndSearch();
-    render();
-  });
+// Fetch CSV and initialize
+async function init(){
+  try{
+    loadingEl.hidden = false;
+    errorEl.hidden = true;
+    noresultsEl.hidden = true;
+
+    const res = await fetch(SHEET_CSV_URL);
+    if(!res.ok) throw new Error('fetch failed');
+    const text = await res.text();
+    rawRows = parseCSV(text);
+
+    // normalize rows
+    records = rawRows.map(r => normalizeRow(r));
+
+    // compute smallest numeric across members and foreign fields
+    smallestNumeric = computeSmallestNumeric(records);
+    unknownValue = assignUnknownValue(smallestNumeric);
+
+    // For any record with null members but members_raw not numeric, assign normalized unknownValue for sorting only
+    records.forEach(r=>{
+      if((r.members === null || typeof r.members !== 'number') && r.members_raw && r.members_raw !== '情報なし'){
+        // keep members null for display, but sorting uses unknownValue (handled in applyFilters)
+      }
+      // if members_raw is '情報なし' keep null
+    });
+
+    // initial render
+    loadingEl.hidden = true;
+    applyAndRender();
+  } catch(err){
+    console.error(err);
+    loadingEl.hidden = true;
+    errorEl.hidden = false;
+  }
 }
 
-// Kick off
+// Start
 init();
