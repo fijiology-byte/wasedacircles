@@ -113,26 +113,37 @@
             color: var(--dark-gray);
         }
 
-        /* Category Dropdown */
-        .category-dropdown {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--gray);
-            border-radius: 4px;
-            font-family: 'Noto Sans JP', sans-serif;
-            font-size: 1rem;
-            background-color: var(--white);
-            margin-bottom: 1rem;
+        .category-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        /* Subcategory Section */
+        .category-btn {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray);
+            background: var(--white);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-weight: 400;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .category-btn.active,
+        .category-btn:hover {
+            background-color: var(--maroon);
+            color: var(--white);
+            border-color: var(--maroon);
+        }
+
         .subcategory-buttons {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
             max-height: 400px;
             overflow-y: auto;
-            margin-bottom: 1rem;
         }
 
         .subcategory-btn {
@@ -159,7 +170,6 @@
             gap: 0.5rem;
             cursor: pointer;
             margin: 1rem 0;
-            font-size: 0.95rem;
         }
 
         .toggle-slider {
@@ -195,16 +205,30 @@
             display: none;
         }
 
-        /* Sort Dropdown */
-        .sort-dropdown {
+        /* Sort Buttons */
+        .sort-section {
+            margin-top: 1.5rem;
+        }
+
+        .sort-btn {
             width: 100%;
             padding: 0.75rem;
+            margin-bottom: 0.5rem;
             border: 1px solid var(--gray);
+            background: var(--white);
             border-radius: 4px;
+            cursor: pointer;
             font-family: 'Noto Sans JP', sans-serif;
-            font-size: 0.95rem;
-            background-color: var(--white);
-            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+
+        .sort-btn:hover {
+            background-color: var(--light-gray);
+        }
+
+        .sort-btn.active {
+            background-color: var(--maroon);
+            color: var(--white);
         }
 
         /* Main Content */
@@ -525,19 +549,18 @@
         <aside class="sidebar">
             <div class="filter-section">
                 <h3>カテゴリで絞り込み</h3>
-               <div class="category-buttons">
-    <button class="category-btn active" data-category="sports">スポーツ(球技以外)</button>
-    <button class="category-btn" data-category="academic">学問</button>
-    <button class="category-btn" data-category="media">メディア・出版</button>
-    <button class="category-btn" data-category="international">国際交流・ボランティア</button>
-    <button class="category-btn" data-category="culture">文化・芸術</button>
-    <button class="category-btn" data-category="other">その他</button>
-</div>
+                <div class="category-buttons">
+                    <button class="category-btn active" data-category="sports">スポーツ(球技以外)</button>
+                    <button class="category-btn" data-category="academic">学問</button>
+                    <button class="category-btn" data-category="media">メディア・出版</button>
+                    <button class="category-btn" data-category="culture">文化・芸術</button>
+                    <button class="category-btn" data-category="other">その他</button>
+                </div>
                 
                 <div class="subcategory-section">
                     <h4>サブカテゴリ</h4>
                     <div id="subcategoryContainer" class="subcategory-buttons">
-                        <div class="loading-subcategories">カテゴリを選択してください</div>
+                        <!-- Subcategories will be loaded dynamically -->
                     </div>
                 </div>
 
@@ -545,28 +568,29 @@
                     <label class="toggle-label">
                         <input type="checkbox" id="foreignerFriendly">
                         <span class="toggle-slider"></span>
-                        外国人受け入れあり
+                        外国人歓迎
                     </label>
                 </div>
 
-                <select id="sortSelect" class="sort-dropdown">
-                    <option value="">並び替え（所属人数）</option>
-                    <option value="members-desc">Max → Min</option>
-                    <option value="members-asc">Min → Max</option>
-                    <option value="foreign-desc">外国人（多い順）</option>
-                    <option value="foreign-asc">外国人（少ない順）</option>
-                </select>
+                <div class="sort-section">
+                    <button class="sort-btn" id="sortMembers">
+                        メンバー数でソート
+                    </button>
+                    <button class="sort-btn" id="sortForeignMembers">
+                        外国人メンバー数でソート
+                    </button>
+                </div>
             </div>
         </aside>
 
         <!-- Main Grid -->
         <main class="main-content">
-            <div id="loadingSpinner" class="loading-spinner">読み込み中…</div>
+            <div id="loadingSpinner" class="loading-spinner">読み込み中...</div>
             <div id="circleGrid" class="circle-grid">
                 <!-- Circle cards will be loaded here -->
             </div>
             <div id="noResults" class="no-results" style="display: none;">
-                該当する結果はありません。
+                該当するサークルが見つかりませんでした
             </div>
             <div class="pagination" id="pagination">
                 <!-- Pagination will be loaded here -->
@@ -587,31 +611,29 @@
     </footer>
 
     <script>
-        // Configuration - Updated Sheet URLs
-      const SHEET_URLS = {
-    sports: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRv68Z2O5A37_GNZWV5byGgRWcoeA0axvwyzYuwByq2vtleUspMTkpBn9FAGJ-jqejX-5FJnaiS1i_Q/pub?output=csv",
-    academic: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZeeFkaYJYzjzoCxucwMTaaGTD6tpyNCpZVhocgNcAcT5F-pSm4r_ext7Kzl4J4Olwayz-q_pnKGEa/pub?output=csv",
-    media: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRF1QkL3Vno2tBzRQD0ZcNKa0oFwfUFcB8wpd9yPJI-Un-bMfD2ywrT4wqwri9piY8YEKjsY839_YfX/pub?output=csv",
-    international: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP8yHtBqDWLn32hMoYaiJIS3jyq2Ttv9nUQn7B2Nxh6d1VAMMSv4KKOdCMQRSA_npTzCbVUHvwI3i2/pub?output=csv",
-    culture: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzOY7j83L-BB2dAs7738lO9w7sEu_lUbk0mLri2tnq15xAQZonEzfw6j7nfQPpgiaHv6YWCDfXuwSQ/pub?output=csv",
-    other: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTysfxHQrwVeF0UmbKOJx2fFe-gcJGKUqyT2LdF314ehOXnaSU-LyzV96Bl4tWIiACsd_S3bGoF9YYI/pub?output=csv"
-};
+        // Configuration
+        const SHEET_URLS = {
+            sports: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRv68Z2O5A37_GNZWV5byGgRWcoeA0axvwyzYuwByq2vtleUspMTkpBn9FAGJ-jqejX-5FJnaiS1i_Q/pub?output=csv",
+            academic: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZeeFkaYJYzjzoCxucwMTaaGTD6tpyNCpZVhocgNcAcT5F-pSm4r_ext7Kzl4J4Olwayz-q_pnKGEa/pub?output=csv",
+            media: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRF1QkL3Vno2tBzRQD0ZcNKa0oFwfUFcB8wpd9yPJI-Un-bMfD2ywrT4wqwri9piY8YEKjsY839_YfX/pub?output=csv",
+            culture: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzOY7j83L-BB2dAs7738lO9w7sEu_lUbk0mLri2tnq15xAQZonEzfw6j7nfQPpgiaHv6YWCDfXuwSQ/pub?output=csv",
+            other: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTysfxHQrwVeF0UmbKOJx2fFe-gcJGKUqyT2LdF314ehOXnaSU-LyzV96Bl4tWIiACsd_S3bGoF9YYI/pub?output=csv"
+        };
 
-        // Updated Subcategory mapping based on your sheets
-       const SUBCATEGORIES = {
-    sports: ["バドミントン", "ダンス", "武道", "乗馬", "ヨット", "スキー", "水泳", "サイクリング", "アウトドア", "そのほかのスポーツ"],
-    academic: ["政治", "経済", "歴史", "宗教", "哲学", "法律", "自然科学", "言語", "日本文学", "日本文化", "学問", "趣味", "技術"],
-    media: ["出版 / Publication", "コミュニケーション / Communication", "マスメディア / Media", "企画 / Planning", "レクリエーション / Recreation"],
-    international: ["国際交流", "ボランティア"],
-    culture: ["舞台芸術", "演劇", "映画", "音楽", "声楽", "美術", "その他の文化"],
-    other: ["学生稲門会"]
-};
+        // Subcategory mapping
+        const SUBCATEGORIES = {
+            sports: ["バドミントン", "ダンス", "武道", "乗馬", "ヨット", "スキー", "水泳", "サイクリング", "アウトドア", "そのほかのスポーツ"],
+            academic: ["政治", "経済", "歴史", "宗教", "哲学", "法律", "自然科学", "言語", "日本文学", "日本文化", "学問", "趣味", "技術"],
+            media: ["出版 / Publication", "コミュニケーション / Communication", "マスメディア / Media", "企画 / Planning", "レクリエーション / Recreation"],
+            culture: ["舞台芸術", "演劇", "映画", "音楽", "声楽", "美術", "その他の文化"],
+            other: ["学生稲門会"]
+        };
 
         // Global state
         let allCircles = [];
         let filteredCircles = [];
-        let currentCategory = "";
-        let currentSubcategory = "";
+        let currentCategory = "sports";
+        let currentSubcategory = null;
         let currentPage = 1;
         const circlesPerPage = 12;
 
@@ -621,10 +643,11 @@
         const noResults = document.getElementById('noResults');
         const pagination = document.getElementById('pagination');
         const searchInput = document.getElementById('searchInput');
-        const categorySelect = document.getElementById('categorySelect');
+        const categoryButtons = document.querySelectorAll('.category-btn');
         const subcategoryContainer = document.getElementById('subcategoryContainer');
         const foreignerFriendly = document.getElementById('foreignerFriendly');
-        const sortSelect = document.getElementById('sortSelect');
+        const sortMembersBtn = document.getElementById('sortMembers');
+        const sortForeignMembersBtn = document.getElementById('sortForeignMembers');
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
@@ -646,7 +669,7 @@
                 allCircles = results.flat();
                 
                 loadingSpinner.style.display = 'none';
-                console.log("Total circles loaded:", allCircles.length);
+                renderSubcategories();
                 filterAndRenderCircles();
             } catch (error) {
                 console.error('Error loading data:', error);
@@ -666,67 +689,64 @@
             }
         }
 
-        // Parse CSV data - ADJUSTED FOR YOUR SPREADSHEET STRUCTURE
+        // Parse CSV data
         function parseCSV(csvText, category) {
-            const lines = csvText.split('\n').filter(line => line.trim() !== '');
-            const circles = [];
+            const lines = csvText.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
             
-            // Skip header row and process each line
+            const circles = [];
             for (let i = 1; i < lines.length; i++) {
-                // Handle CSV with quotes properly
-                const values = [];
-                let current = '';
-                let inQuotes = false;
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values.length < 2 || !values[0]) continue;
                 
-                for (let char of lines[i]) {
-                    if (char === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (char === ',' && !inQuotes) {
-                        values.push(current.trim());
-                        current = '';
-                    } else {
-                        current += char;
-                    }
-                }
-                values.push(current.trim());
+                const circle = {
+                    name: values[0] || '名称不明',
+                    subcategory: getSubcategoryFromRow(values, category),
+                    description: values[2] || '説明なし',
+                    members: parseInt(values[3]) || 0,
+                    foreignMembers: parseInt(values[4]) || 0,
+                    contact: values[5] || '',
+                    website: values[6] || '',
+                    events: values[7] || '',
+                    image: values[8] || ''
+                };
                 
-                // Create circle object - ADJUST COLUMN INDICES BASED ON YOUR DATA
-                // Column 0: Circle Name, Column 1: Subcategory, etc.
-                if (values[0] && values[0] !== '') {
-                    const circle = {
-                        name: values[0] || '名称不明',
-                        subcategory: values[1] || getDefaultSubcategory(category),
-                        description: values[2] || '',
-                        members: parseInt(values[3]) || 0,
-                        foreignMembers: parseInt(values[4]) || 0,
-                        contact: values[5] || '',
-                        website: values[6] || '',
-                        events: values[7] || '',
-                        activities: values[8] || '',
-                        image: values[9] || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
-                    };
-                    
-                    circles.push(circle);
-                }
+                circles.push(circle);
             }
             
             return circles;
         }
 
-        // Get default subcategory for a category
-        function getDefaultSubcategory(category) {
-            const subcats = SUBCATEGORIES[category];
-            return subcats && subcats.length > 0 ? subcats[0] : 'その他';
+        // Determine subcategory based on row data and category
+        function getSubcategoryFromRow(values, category) {
+            // For now, using a simple approach - you might need to adjust based on your actual data structure
+            if (category === 'sports') {
+                // Check which subcategory this circle belongs to based on position in CSV
+                // This is a simplified approach - you might need to adjust based on your actual CSV structure
+                const subcategories = SUBCATEGORIES.sports;
+                for (const subcat of subcategories) {
+                    if (values[1] && values[1].includes(subcat)) {
+                        return subcat;
+                    }
+                }
+            }
+            
+            // Default to first subcategory if none matched
+            return SUBCATEGORIES[category][0] || 'その他';
         }
 
         // Setup event listeners
         function setupEventListeners() {
-            // Category dropdown
-            categorySelect.addEventListener('change', function() {
-                currentCategory = this.value;
-                currentSubcategory = "";
-                renderSubcategories();
-                filterAndRenderCircles();
+            // Category buttons
+            categoryButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    categoryButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentCategory = this.dataset.category;
+                    currentSubcategory = null;
+                    renderSubcategories();
+                    filterAndRenderCircles();
+                });
             });
             
             // Search
@@ -739,50 +759,47 @@
             // Foreigner friendly toggle
             foreignerFriendly.addEventListener('change', filterAndRenderCircles);
             
-            // Sort dropdown
-            sortSelect.addEventListener('change', filterAndRenderCircles);
+            // Sort buttons
+            sortMembersBtn.addEventListener('click', function() {
+                sortMembersBtn.classList.toggle('active');
+                sortForeignMembersBtn.classList.remove('active');
+                filterAndRenderCircles();
+            });
+            
+            sortForeignMembersBtn.addEventListener('click', function() {
+                sortForeignMembersBtn.classList.toggle('active');
+                sortMembersBtn.classList.remove('active');
+                filterAndRenderCircles();
+            });
         }
 
         // Render subcategory buttons based on current category
         function renderSubcategories() {
-            if (!currentCategory) {
-                subcategoryContainer.innerHTML = '<div class="loading-subcategories">カテゴリを選択してください</div>';
-                return;
-            }
-            
             const subcategories = SUBCATEGORIES[currentCategory] || [];
             subcategoryContainer.innerHTML = '';
             
-            // Add "All" button
-            const allButton = document.createElement('button');
-            allButton.className = `subcategory-btn ${currentSubcategory === "" ? 'active' : ''}`;
-            allButton.textContent = '全て';
-            allButton.dataset.subcategory = '';
-            
-            allButton.addEventListener('click', function() {
-                document.querySelectorAll('.subcategory-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                currentSubcategory = "";
-                this.classList.add('active');
-                filterAndRenderCircles();
-            });
-            
-            subcategoryContainer.appendChild(allButton);
-            
-            // Add each subcategory button
             subcategories.forEach(subcat => {
                 const button = document.createElement('button');
-                button.className = `subcategory-btn ${currentSubcategory === subcat ? 'active' : ''}`;
+                button.className = 'subcategory-btn';
                 button.textContent = subcat;
                 button.dataset.subcategory = subcat;
+                
+                if (currentSubcategory === subcat) {
+                    button.classList.add('active');
+                }
                 
                 button.addEventListener('click', function() {
                     document.querySelectorAll('.subcategory-btn').forEach(btn => {
                         btn.classList.remove('active');
                     });
-                    currentSubcategory = subcat;
-                    this.classList.add('active');
+                    
+                    if (currentSubcategory === subcat) {
+                        currentSubcategory = null;
+                    } else {
+                        this.classList.add('active');
+                        currentSubcategory = subcat;
+                    }
+                    
                     filterAndRenderCircles();
                 });
                 
@@ -795,7 +812,7 @@
             // Apply filters
             filteredCircles = allCircles.filter(circle => {
                 // Category filter
-                if (currentCategory && circle.category !== currentCategory) return false;
+                if (circle.category !== currentCategory) return false;
                 
                 // Subcategory filter
                 if (currentSubcategory && circle.subcategory !== currentSubcategory) return false;
@@ -805,25 +822,19 @@
                 
                 // Search filter
                 const searchTerm = searchInput.value.toLowerCase();
-                if (searchTerm) {
-                    const searchFields = [circle.name, circle.description, circle.subcategory, circle.activities]
-                        .filter(field => field).join(' ').toLowerCase();
-                    if (!searchFields.includes(searchTerm)) return false;
+                if (searchTerm && !circle.name.toLowerCase().includes(searchTerm) && 
+                    !circle.description.toLowerCase().includes(searchTerm)) {
+                    return false;
                 }
                 
                 return true;
             });
             
             // Apply sorting
-            const sortValue = sortSelect.value;
-            if (sortValue === 'members-desc') {
+            if (sortMembersBtn.classList.contains('active')) {
                 filteredCircles.sort((a, b) => b.members - a.members);
-            } else if (sortValue === 'members-asc') {
-                filteredCircles.sort((a, b) => a.members - b.members);
-            } else if (sortValue === 'foreign-desc') {
+            } else if (sortForeignMembersBtn.classList.contains('active')) {
                 filteredCircles.sort((a, b) => b.foreignMembers - a.foreignMembers);
-            } else if (sortValue === 'foreign-asc') {
-                filteredCircles.sort((a, b) => a.foreignMembers - b.foreignMembers);
             }
             
             // Reset to first page
@@ -836,10 +847,8 @@
             // Show/hide no results message
             if (filteredCircles.length === 0) {
                 noResults.style.display = 'block';
-                circleGrid.style.display = 'none';
             } else {
                 noResults.style.display = 'none';
-                circleGrid.style.display = 'grid';
             }
         }
 
@@ -854,7 +863,7 @@
             circlesToShow.forEach(circle => {
                 const card = document.createElement('div');
                 card.className = 'circle-card';
-                card.style.backgroundImage = `url(${circle.image})`;
+                card.style.backgroundImage = `url(${circle.image || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'})`;
                 
                 card.innerHTML = `
                     <div class="card-overlay">
@@ -915,24 +924,24 @@
             expandedView.innerHTML = `
                 <div class="expanded-content">
                     <button class="close-btn">&times;</button>
-                    <div class="expanded-header" style="background-image: url(${circle.image})">
+                    <div class="expanded-header" style="background-image: url(${circle.image || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'})">
                         <div class="expanded-overlay">
                             <h2>${circle.name}</h2>
                             <p>${circle.subcategory} • メンバー: ${circle.members} ${circle.foreignMembers > 0 ? `• 外国人: ${circle.foreignMembers}` : ''}</p>
                         </div>
                     </div>
                     <div class="expanded-body">
-                        ${circle.description ? `
                         <div class="expanded-section">
                             <h3>説明</h3>
-                            <p>${circle.description}</p>
+                            <p>${circle.description || '説明はありません'}</p>
                         </div>
-                        ` : ''}
                         
-                        ${circle.activities ? `
+                        ${circle.contact ? `
                         <div class="expanded-section">
-                            <h3>活動内容</h3>
-                            <p>${circle.activities}</p>
+                            <h3>連絡先</h3>
+                            <div class="contact-info">
+                                <p>${circle.contact}</p>
+                            </div>
                         </div>
                         ` : ''}
                         
@@ -941,15 +950,6 @@
                             <h3>イベント・活動</h3>
                             <div class="event-info">
                                 <p>${circle.events}</p>
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        ${circle.contact ? `
-                        <div class="expanded-section">
-                            <h3>連絡先</h3>
-                            <div class="contact-info">
-                                <p>${circle.contact}</p>
                             </div>
                         </div>
                         ` : ''}
