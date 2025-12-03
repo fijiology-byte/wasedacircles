@@ -550,12 +550,13 @@
             <div class="filter-section">
                 <h3>カテゴリで絞り込み</h3>
                 <div class="category-buttons">
-                    <button class="category-btn active" data-category="sports">スポーツ(球技以外)</button>
-                    <button class="category-btn" data-category="academic">学問</button>
-                    <button class="category-btn" data-category="media">メディア・出版</button>
-                    <button class="category-btn" data-category="culture">文化・芸術</button>
-                    <button class="category-btn" data-category="other">その他</button>
-                </div>
+    <button class="category-btn active" data-category="non_ball_sports">スポーツ(球技以外)</button>
+    <button class="category-btn" data-category="academic">学問</button>
+    <button class="category-btn" data-category="media">メディア・出版</button>
+    <button class="category-btn" data-category="culture">文化・芸術</button>
+    <button class="category-btn" data-category="international">国際交流イベント</button>
+    <button class="category-btn" data-category="other">その他</button>
+</div>
                 
                 <div class="subcategory-section">
                     <h4>サブカテゴリ</h4>
@@ -613,26 +614,28 @@
     <script>
         // Configuration
         const SHEET_URLS = {
-            sports: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRv68Z2O5A37_GNZWV5byGgRWcoeA0axvwyzYuwByq2vtleUspMTkpBn9FAGJ-jqejX-5FJnaiS1i_Q/pub?output=csv",
-            academic: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZeeFkaYJYzjzoCxucwMTaaGTD6tpyNCpZVhocgNcAcT5F-pSm4r_ext7Kzl4J4Olwayz-q_pnKGEa/pub?output=csv",
-            media: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRF1QkL3Vno2tBzRQD0ZcNKa0oFwfUFcB8wpd9yPJI-Un-bMfD2ywrT4wqwri9piY8YEKjsY839_YfX/pub?output=csv",
-            culture: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzOY7j83L-BB2dAs7738lO9w7sEu_lUbk0mLri2tnq15xAQZonEzfw6j7nfQPpgiaHv6YWCDfXuwSQ/pub?output=csv",
-            other: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTysfxHQrwVeF0UmbKOJx2fFe-gcJGKUqyT2LdF314ehOXnaSU-LyzV96Bl4tWIiACsd_S3bGoF9YYI/pub?output=csv"
-        };
 
+    non_ball_sports: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRv68Z2O5A37_GNZWV5byGgRWcoeA0axvwyzYuwByq2vtleUspMTkpBn9FAGJ-jqejX-5FJnaiS1i_Q/pub?output=csv",
+    academic: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZeeFkaYJYzjzoCxucwMTaaGTD6tpyNCpZVhocgNcAcT5F-pSm4r_ext7Kzl4J4Olwayz-q_pnKGEa/pub?output=csv",
+    media: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRF1QkL3Vno2tBzRQD0ZcNKa0oFwfUFcB8wpd9yPJI-Un-bMfD2ywrT4wqwri9piY8YEKjsY839_YfX/pub?output=csv",
+    culture: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzOY7j83L-BB2dAs7738lO9w7sEu_lUbk0mLri2tnq15xAQZonEzfw6j7nfQPpgiaHv6YWCDfXuwSQ/pub?output=csv",
+    international: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP8yHtBqDWLn32hMoYaiJIS3jyq2Ttv9nUQn7B2Nxh6d1VAMMSv4KKOdCMQRSA_npTzCbVUHvwI3i2/puboutput=csv”,
+    other: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTysfxHQrwVeF0UmbKOJx2fFe-gcJGKUqyT2LdF314ehOXnaSU-LyzV96Bl4tWIiACsd_S3bGoF9YYI/pub?output=csv"
+};
         // Subcategory mapping
-        const SUBCATEGORIES = {
-            sports: ["バドミントン", "ダンス", "武道", "乗馬", "ヨット", "スキー", "水泳", "サイクリング", "アウトドア", "そのほかのスポーツ"],
-            academic: ["政治", "経済", "歴史", "宗教", "哲学", "法律", "自然科学", "言語", "日本文学", "日本文化", "学問", "趣味", "技術"],
-            media: ["出版 / Publication", "コミュニケーション / Communication", "マスメディア / Media", "企画 / Planning", "レクリエーション / Recreation"],
-            culture: ["舞台芸術", "演劇", "映画", "音楽", "声楽", "美術", "その他の文化"],
-            other: ["学生稲門会"]
-        };
+const SUBCATEGORIES = {
+    non_ball_sports: ["バドミントン", "ダンス", "武道", "乗馬", "ヨット", "スキー", "水泳", "サイクリング", "アウトドア", "そのほかのスポーツ"],
+    academic: ["政治", "経済", "歴史", "宗教", "哲学", "法律", "自然科学", "言語", "日本文学", "日本文化", "学問", "趣味", "技術"],
+    media: ["出版 / Publication", "コミュニケーション / Communication", "マスメディア / Media", "企画 / Planning", "レクリエーション / Recreation"],
+    culture: ["舞台芸術", "演劇", "映画", "音楽", "声楽", "美術", "その他の文化"],
+    international: ["国際交流", "ボランティア", "国際ボランティア", "文化交流", "語学交流"], // Add this
+    other: ["学生稲門会"]
+};
 
         // Global state
         let allCircles = [];
         let filteredCircles = [];
-        let currentCategory = "sports";
+        let currentCategory = "non_ball_sports";
         let currentSubcategory = null;
         let currentPage = 1;
         const circlesPerPage = 12;
@@ -717,23 +720,22 @@
             return circles;
         }
 
-        // Determine subcategory based on row data and category
-        function getSubcategoryFromRow(values, category) {
-            // For now, using a simple approach - you might need to adjust based on your actual data structure
-            if (category === 'sports') {
-                // Check which subcategory this circle belongs to based on position in CSV
-                // This is a simplified approach - you might need to adjust based on your actual CSV structure
-                const subcategories = SUBCATEGORIES.sports;
-                for (const subcat of subcategories) {
-                    if (values[1] && values[1].includes(subcat)) {
-                        return subcat;
-                    }
-                }
+// Determine subcategory based on row data and category
+function getSubcategoryFromRow(values, category) {
+    // For now, using a simple approach - you might need to adjust based on your actual data structure
+    if (category === 'non_ball_sports') { // Change 'sports' to 'non_ball_sports'
+        // Check which subcategory this circle belongs to based on position in CSV
+        const subcategories = SUBCATEGORIES.non_ball_sports; // Update this line
+        for (const subcat of subcategories) {
+            if (values[1] && values[1].includes(subcat)) {
+                return subcat;
             }
-            
-            // Default to first subcategory if none matched
-            return SUBCATEGORIES[category][0] || 'その他';
         }
+    }
+    
+    // Default to first subcategory if none matched
+    return SUBCATEGORIES[category][0] || 'その他';
+}
 
         // Setup event listeners
         function setupEventListeners() {
