@@ -723,19 +723,9 @@ const SUBCATEGORIES = {
 // Determine subcategory based on row data and category
 function getSubcategoryFromRow(values, category) {
     // For now, using a simple approach - you might need to adjust based on your actual data structure
-    if (category === 'non_ball_sports') { // Change 'sports' to 'non_ball_sports'
+    if (category === 'non_ball_sports') { // Changed from 'sports' to 'non_ball_sports'
         // Check which subcategory this circle belongs to based on position in CSV
-        const subcategories = SUBCATEGORIES.non_ball_sports; // Update this line
-        for (const subcat of subcategories) {
-            if (values[1] && values[1].includes(subcat)) {
-                return subcat;
-            }
-        }
-    }
-    
-    // Default to first subcategory if none matched
-    return SUBCATEGORIES[category][0] || 'その他';
-}
+        const subcategories = SUBCATEGORIES.non_ball_sports; // Changed from
 
         // Setup event listeners
         function setupEventListeners() {
