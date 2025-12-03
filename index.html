@@ -525,15 +525,14 @@
         <aside class="sidebar">
             <div class="filter-section">
                 <h3>カテゴリで絞り込み</h3>
-                <select id="categorySelect" class="category-dropdown">
-                    <option value="">カテゴリを選んでください...</option>
-                    <option value="sports">スポーツ(球技以外)</option>
-                    <option value="academic">学問</option>
-                    <option value="media">メディア・出版</option>
-                    <option value="international">国際交流・ボランティア</option>
-                    <option value="culture">文化・芸術</option>
-                    <option value="other">その他</option>
-                </select>
+               <div class="category-buttons">
+    <button class="category-btn active" data-category="sports">スポーツ(球技以外)</button>
+    <button class="category-btn" data-category="academic">学問</button>
+    <button class="category-btn" data-category="media">メディア・出版</button>
+    <button class="category-btn" data-category="international">国際交流・ボランティア</button>
+    <button class="category-btn" data-category="culture">文化・芸術</button>
+    <button class="category-btn" data-category="other">その他</button>
+</div>
                 
                 <div class="subcategory-section">
                     <h4>サブカテゴリ</h4>
@@ -589,24 +588,24 @@
 
     <script>
         // Configuration - Updated Sheet URLs
-        const SHEET_URLS = {
-            sports: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRv68Z2O5A37_GNZWV5byGgRWcoeA0axvwyzYuwByq2vtleUspMTkpBn9FAGJ-jqejX-5FJnaiS1i_Q/pub?output=csv",
-            academic: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZeeFkaYJYzjzoCxucwMTaaGTD6tpyNCpZVhocgNcAcT5F-pSm4r_ext7Kzl4J4Olwayz-q_pnKGEa/pub?output=csv",
-            media: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRF1QkL3Vno2tBzRQD0ZcNKa0oFwfUFcB8wpd9yPJI-Un-bMfD2ywrT4wqwri9piY8YEKjsY839_YfX/pub?output=csv",
-            international: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP8yHtBqDWLn32hMoYaiJIS3jyq2Ttv9nUQn7B2Nxh6d1VAMMSv4KKOdCMQRSA_npTzCbVUHvwI3i2/pub?output=csv",
-            culture: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzOY7j83L-BB2dAs7738lO9w7sEu_lUbk0mLri2tnq15xAQZonEzfw6j7nfQPpgiaHv6YWCDfXuwSQ/pub?output=csv",
-            other: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTysfxHQrwVeF0UmbKOJx2fFe-gcJGKUqyT2LdF314ehOXnaSU-LyzV96Bl4tWIiACsd_S3bGoF9YYI/pub?output=csv"
-        };
+      const SHEET_URLS = {
+    sports: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRv68Z2O5A37_GNZWV5byGgRWcoeA0axvwyzYuwByq2vtleUspMTkpBn9FAGJ-jqejX-5FJnaiS1i_Q/pub?output=csv",
+    academic: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZeeFkaYJYzjzoCxucwMTaaGTD6tpyNCpZVhocgNcAcT5F-pSm4r_ext7Kzl4J4Olwayz-q_pnKGEa/pub?output=csv",
+    media: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRF1QkL3Vno2tBzRQD0ZcNKa0oFwfUFcB8wpd9yPJI-Un-bMfD2ywrT4wqwri9piY8YEKjsY839_YfX/pub?output=csv",
+    international: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP8yHtBqDWLn32hMoYaiJIS3jyq2Ttv9nUQn7B2Nxh6d1VAMMSv4KKOdCMQRSA_npTzCbVUHvwI3i2/pub?output=csv",
+    culture: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzOY7j83L-BB2dAs7738lO9w7sEu_lUbk0mLri2tnq15xAQZonEzfw6j7nfQPpgiaHv6YWCDfXuwSQ/pub?output=csv",
+    other: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTysfxHQrwVeF0UmbKOJx2fFe-gcJGKUqyT2LdF314ehOXnaSU-LyzV96Bl4tWIiACsd_S3bGoF9YYI/pub?output=csv"
+};
 
         // Updated Subcategory mapping based on your sheets
-        const SUBCATEGORIES = {
-            sports: ["バドミントン", "ダンス", "武道", "乗馬", "ヨット", "スキー", "水泳", "サイクリング", "アウトドア", "そのほかのスポーツ"],
-            academic: ["政治", "経済", "歴史", "宗教", "哲学", "法律", "自然科学", "言語", "日本文学", "日本文化", "学問", "趣味", "技術"],
-            media: ["出版 / Publication", "コミュニケーション / Communication", "マスメディア / Media", "企画 / Planning", "レクリエーション / Recreation"],
-            international: ["国際交流", "ボランティア"],
-            culture: ["舞台芸術", "演劇", "映画", "音楽", "声楽", "美術", "その他の文化"],
-            other: ["学生稲門会", "その他"]
-        };
+       const SUBCATEGORIES = {
+    sports: ["バドミントン", "ダンス", "武道", "乗馬", "ヨット", "スキー", "水泳", "サイクリング", "アウトドア", "そのほかのスポーツ"],
+    academic: ["政治", "経済", "歴史", "宗教", "哲学", "法律", "自然科学", "言語", "日本文学", "日本文化", "学問", "趣味", "技術"],
+    media: ["出版 / Publication", "コミュニケーション / Communication", "マスメディア / Media", "企画 / Planning", "レクリエーション / Recreation"],
+    international: ["国際交流", "ボランティア"],
+    culture: ["舞台芸術", "演劇", "映画", "音楽", "声楽", "美術", "その他の文化"],
+    other: ["学生稲門会"]
+};
 
         // Global state
         let allCircles = [];
