@@ -611,162 +611,129 @@
         </div>
     </footer>
 
-    <script>
-        // Configuration
-        const SHEET_URLS = {
+<script>
+    // Configuration
+    const SHEET_URLS = {
+        non_ball_sports: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRv68Z2O5A37_GNZWV5byGgRWcoeA0axvwyzYuwByq2vtleUspMTkpBn9FAGJ-jqejX-5FJnaiS1i_Q/pub?output=csv",
+        academic: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZeeFkaYJYzjzoCxucwMTaaGTD6tpyNCpZVhocgNcAcT5F-pSm4r_ext7Kzl4J4Olwayz-q_pnKGEa/pub?output=csv",
+        media: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRF1QkL3Vno2tBzRQD0ZcNKa0oFwfUFcB8wpd9yPJI-Un-bMfD2ywrT4wqwri9piY8YEKjsY839_YfX/pub?output=csv",
+        culture: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzOY7j83L-BB2dAs7738lO9w7sEu_lUbk0mLri2tnq15xAQZonEzfw6j7nfQPpgiaHv6YWCDfXuwSQ/pub?output=csv",
+        international: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP8yHtBqDWLn32hMoYaiJIS3jyq2Ttv9nUQn7B2Nxh6d1VAMMSv4KKOdCMQRSA_npTzCbVUHvwI3i2/pub?output=csv",
+        other: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTysfxHQrwVeF0UmbKOJx2fFe-gcJGKUqyT2LdF314ehOXnaSU-LyzV96Bl4tWIiACsd_S3bGoF9YYI/pub?output=csv"
+    };
 
-    non_ball_sports: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRv68Z2O5A37_GNZWV5byGgRWcoeA0axvwyzYuwByq2vtleUspMTkpBn9FAGJ-jqejX-5FJnaiS1i_Q/pub?output=csv",
-    academic: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZeeFkaYJYzjzoCxucwMTaaGTD6tpyNCpZVhocgNcAcT5F-pSm4r_ext7Kzl4J4Olwayz-q_pnKGEa/pub?output=csv",
-    media: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRF1QkL3Vno2tBzRQD0ZcNKa0oFwfUFcB8wpd9yPJI-Un-bMfD2ywrT4wqwri9piY8YEKjsY839_YfX/pub?output=csv",
-    culture: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzOY7j83L-BB2dAs7738lO9w7sEu_lUbk0mLri2tnq15xAQZonEzfw6j7nfQPpgiaHv6YWCDfXuwSQ/pub?output=csv",
-international: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP8yHtBqDWLn32hMoYaiJIS3jyq2Ttv9nUQn7B2Nxh6d1VAMMSv4KKOdCMQRSA_npTzCbVUHvwI3i2/pub?output=csv",    
-            other: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTysfxHQrwVeF0UmbKOJx2fFe-gcJGKUqyT2LdF314ehOXnaSU-LyzV96Bl4tWIiACsd_S3bGoF9YYI/pub?output=csv"
-};
-        // Subcategory mapping
-const SUBCATEGORIES = {
-    non_ball_sports: ["バドミントン", "ダンス", "武道", "乗馬", "ヨット", "スキー", "水泳", "サイクリング", "アウトドア", "そのほかのスポーツ"],
-    academic: ["政治", "経済", "歴史", "宗教", "哲学", "法律", "自然科学", "言語", "日本文学", "日本文化", "学問", "趣味", "技術"],
-    media: ["出版 / Publication", "コミュニケーション / Communication", "マスメディア / Media", "企画 / Planning", "レクリエーション / Recreation"],
-    culture: ["舞台芸術", "演劇", "映画", "音楽", "声楽", "美術", "その他の文化"],
-    international: ["国際交流", "ボランティア", "国際ボランティア", "文化交流", "語学交流"], // Add this
-    other: ["学生稲門会"]
-};
+    // Subcategory mapping
+    const SUBCATEGORIES = {
+        non_ball_sports: ["バドミントン", "ダンス", "武道", "乗馬", "ヨット", "スキー", "水泳", "サイクリング", "アウトドア", "そのほかのスポーツ"],
+        academic: ["政治", "経済", "歴史", "宗教", "哲学", "法律", "自然科学", "言語", "日本文学", "日本文化", "学問", "趣味", "技術"],
+        media: ["出版 / Publication", "コミュニケーション / Communication", "マスメディア / Media", "企画 / Planning", "レクリエーション / Recreation"],
+        culture: ["舞台芸術", "演劇", "映画", "音楽", "声楽", "美術", "その他の文化"],
+        international: ["国際交流", "ボランティア", "国際ボランティア", "文化交流", "語学交流"],
+        other: ["学生稲門会"]
+    };
 
-        // Global state
-        let allCircles = [];
-        let filteredCircles = [];
-        let currentCategory = "non_ball_sports";
-        let currentSubcategory = null;
-        let currentPage = 1;
-        const circlesPerPage = 12;
+    // Global state
+    let allCircles = [];
+    let filteredCircles = [];
+    let currentCategory = "non_ball_sports";
+    let currentSubcategory = null;
+    let currentPage = 1;
+    const circlesPerPage = 12;
 
-// DOM elements
-const circleGrid = document.getElementById('circleGrid');
-const loadingSpinner = document.getElementById('loadingSpinner');
-const noResults = document.getElementById('noResults');
-const pagination = document.getElementById('pagination');
-const searchInput = document.getElementById('searchInput');
-const categoryButtons = document.querySelectorAll('.category-btn');
-const subcategoryContainer = document.getElementById('subcategoryContainer');
-const foreignerFriendly = document.getElementById('foreignerFriendly');
-const sortMembersBtn = document.getElementById('sortMembers');
-const sortForeignMembersBtn = document.getElementById('sortForeignMembers');
+    // DOM elements
+    const circleGrid = document.getElementById('circleGrid');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const noResults = document.getElementById('noResults');
+    const pagination = document.getElementById('pagination');
+    const searchInput = document.getElementById('searchInput');
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const subcategoryContainer = document.getElementById('subcategoryContainer');
+    const foreignerFriendly = document.getElementById('foreignerFriendly');
+    const sortMembersBtn = document.getElementById('sortMembers');
+    const sortForeignMembersBtn = document.getElementById('sortForeignMembers');
 
-// ========== DEBUGGING CODE ==========
-console.log("🔧 === CONFIGURATION CHECK ===");
-console.log("Current SHEET_URLS:", SHEET_URLS);
-console.log("Categories in SHEET_URLS:", Object.keys(SHEET_URLS));
-console.log("Categories in SUBCATEGORIES:", Object.keys(SUBCATEGORIES));
-console.log("Initial currentCategory:", currentCategory);
+    // Debugging
+    console.log("🔧 === CONFIGURATION CHECK ===");
+    console.log("Categories in SHEET_URLS:", Object.keys(SHEET_URLS));
+    console.log("Initial currentCategory:", currentCategory);
+    console.log("==============================");
 
-// Check each URL
-Object.entries(SHEET_URLS).forEach(([category, url]) => {
-    console.log(`${category}: ${url}`);
-    if (!url.includes('pub?output=csv')) {
-        console.warn(`⚠️ ${category} URL might be wrong format. Should end with pub?output=csv`);
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("🚀 DOM loaded, starting application...");
+        loadAllData();
+        setupEventListeners();
+    });
+
+    // Load data from all sheets
+    async function loadAllData() {
+        try {
+            loadingSpinner.style.display = 'block';
+            loadingSpinner.textContent = 'データを読み込み中...';
+            console.log("🚀 Starting to load all data...");
+            
+            const promises = Object.entries(SHEET_URLS).map(async ([category, url]) => {
+                try {
+                    const circles = await fetchSheetData(url, category);
+                    console.log(`✅ Loaded ${circles.length} circles from ${category}`);
+                    return circles.map(circle => ({...circle, category}));
+                } catch (error) {
+                    console.error(`❌ Failed to load ${category}:`, error);
+                    return [];
+                }
+            });
+            
+            const results = await Promise.all(promises);
+            allCircles = results.flat();
+            
+            console.log("=================================");
+            console.log("📈 TOTAL CIRCLES LOADED:", allCircles.length);
+            console.log("=================================");
+            
+            if (allCircles.length === 0) {
+                loadingSpinner.textContent = 'データが見つかりませんでした。Google SheetのURLを確認してください。';
+                loadingSpinner.style.color = 'var(--maroon)';
+                return;
+            }
+            
+            loadingSpinner.style.display = 'none';
+            renderSubcategories();
+            filterAndRenderCircles();
+            
+        } catch (error) {
+            console.error('💥 Critical error in loadAllData:', error);
+            loadingSpinner.textContent = `読み込みエラー: ${error.message}`;
+            loadingSpinner.style.color = 'red';
+        }
     }
-    if (!url.startsWith('https://')) {
-        console.error(`❌ ${category} URL is not HTTPS!`);
-    }
-});
-console.log("==============================");
-// ========== END DEBUGGING ==========
 
-// Initialize the application
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("🚀 DOM loaded, starting application...");
-    loadAllData();
-    setupEventListeners();
-});
-
-// Load data from all sheets
-async function loadAllData() {
-    try {
-        loadingSpinner.style.display = 'block';
-        loadingSpinner.textContent = 'データを読み込み中...';
-        console.log("🚀 Starting to load all data...");
-        
-        const promises = Object.entries(SHEET_URLS).map(async ([category, url]) => {
-            try {
-                const circles = await fetchSheetData(url, category);
-                return circles.map(circle => ({...circle, category}));
-            } catch (error) {
-                console.error(`💥 Failed to load ${category}:`, error);
+    // Fetch and parse CSV data
+    async function fetchSheetData(url, category) {
+        try {
+            console.log(`🔍 Fetching ${category}...`);
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const csvText = await response.text();
+            console.log(`✅ ${category} loaded (${csvText.length} chars)`);
+            
+            if (!csvText || csvText.trim().length === 0) {
+                console.warn(`⚠️ ${category} CSV is empty`);
                 return [];
             }
-        });
-        
-        const results = await Promise.all(promises);
-        allCircles = results.flat();
-        
-        console.log("=================================");
-        console.log("📈 TOTAL CIRCLES LOADED:", allCircles.length);
-        console.log("=================================");
-        
-        if (allCircles.length === 0) {
-            loadingSpinner.textContent = 'データが見つかりませんでした。Google SheetのURLを確認してください。';
-            loadingSpinner.style.color = 'var(--maroon)';
-            console.error("❌ No circles loaded. Check your Google Sheet URLs and publishing settings.");
-            return;
-        }
-        
-        loadingSpinner.style.display = 'none';
-        renderSubcategories();
-        filterAndRenderCircles();
-        
-    } catch (error) {
-        console.error('💥 Critical error in loadAllData:', error);
-        loadingSpinner.textContent = `読み込みエラー: ${error.message}`;
-        loadingSpinner.style.color = 'red';
-    }
-}
-        
-        loadingSpinner.style.display = 'none';
-        renderSubcategories();
-        filterAndRenderCircles();
-    } catch (error) {
-        console.error('Main error loading data:', error);
-        loadingSpinner.textContent = `データの読み込みに失敗しました: ${error.message}`;
-        loadingSpinner.style.color = 'red';
-    }
-}
-
-// Fetch and parse CSV data
-async function fetchSheetData(url, category) {
-    try {
-        console.log(`🔍 Fetching ${category} from:`, url);
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const csvText = await response.text();
-        console.log(`✅ ${category} loaded, length: ${csvText.length} chars`);
-        
-        if (!csvText || csvText.trim().length === 0) {
-            console.warn(`⚠️ ${category} CSV is empty`);
+            
+            return parseCSV(csvText, category);
+        } catch (error) {
+            console.error(`❌ Error fetching ${category}:`, error);
             return [];
         }
-        
-        // Check first line
-        const firstLine = csvText.split('\n')[0];
-        console.log(`📝 ${category} headers:`, firstLine);
-        
-        const circles = parseCSV(csvText, category);
-        console.log(`📊 ${category} parsed: ${circles.length} circles`);
-        
-        return circles;
-    } catch (error) {
-        console.error(`❌ Error fetching ${category} data from ${url}:`, error);
-        console.error(`Error message: ${error.message}`);
-        return []; // Return empty array to prevent breaking
     }
-}
 
-// Parse CSV data
-function parseCSV(csvText, category) {
-    try {
+    // Parse CSV data
+    function parseCSV(csvText, category) {
         const lines = csvText.split('\n');
         console.log(`📄 ${category} has ${lines.length} lines`);
         
@@ -775,21 +742,10 @@ function parseCSV(csvText, category) {
             return [];
         }
         
-        const headers = lines[0].split(',').map(h => h.trim());
-        console.log(`🏷️ ${category} headers:`, headers);
-        
         const circles = [];
         for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue; // Skip empty lines
-            
-            const values = line.split(',').map(v => v.trim());
-            console.log(`📋 Line ${i}:`, values);
-            
-            if (values.length < 2 || !values[0]) {
-                console.warn(`⚠️ Skipping invalid row ${i} in ${category}`);
-                continue;
-            }
+            const values = lines[i].split(',').map(v => v.trim());
+            if (values.length < 2 || !values[0]) continue;
             
             const circle = {
                 name: values[0] || '名称不明',
@@ -803,266 +759,264 @@ function parseCSV(csvText, category) {
                 image: values[8] || ''
             };
             
-            console.log(`✅ Circle ${i}: ${circle.name}`);
             circles.push(circle);
         }
         
-        console.log(`🎯 ${category} total circles: ${circles.length}`);
+        console.log(`📊 ${category} parsed: ${circles.length} circles`);
         return circles;
-    } catch (error) {
-        console.error(`❌ Error parsing ${category} CSV:`, error);
-        return [];
     }
-}
 
-// Determine subcategory based on row data and category
-function getSubcategoryFromRow(values, category) {
-    // For now, using a simple approach - you might need to adjust based on your actual data structure
-    if (category === 'non_ball_sports') { // Changed from 'sports' to 'non_ball_sports'
-        // Check which subcategory this circle belongs to based on position in CSV
-        const subcategories = SUBCATEGORIES.non_ball_sports; // Changed from
-
-        // Setup event listeners
-        function setupEventListeners() {
-            // Category buttons
-            categoryButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    categoryButtons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    currentCategory = this.dataset.category;
-                    currentSubcategory = null;
-                    renderSubcategories();
-                    filterAndRenderCircles();
-                });
-            });
-            
-            // Search
-            searchInput.addEventListener('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    filterAndRenderCircles();
+    // Determine subcategory based on row data and category
+    function getSubcategoryFromRow(values, category) {
+        // For non_ball_sports, check which subcategory
+        if (category === 'non_ball_sports') {
+            const subcategories = SUBCATEGORIES.non_ball_sports;
+            for (const subcat of subcategories) {
+                if (values[1] && values[1].includes(subcat)) {
+                    return subcat;
                 }
-            });
-            
-            // Foreigner friendly toggle
-            foreignerFriendly.addEventListener('change', filterAndRenderCircles);
-            
-            // Sort buttons
-            sortMembersBtn.addEventListener('click', function() {
-                sortMembersBtn.classList.toggle('active');
-                sortForeignMembersBtn.classList.remove('active');
-                filterAndRenderCircles();
-            });
-            
-            sortForeignMembersBtn.addEventListener('click', function() {
-                sortForeignMembersBtn.classList.toggle('active');
-                sortMembersBtn.classList.remove('active');
-                filterAndRenderCircles();
-            });
+            }
         }
+        
+        // For other categories, return the value in column 1 (index 1)
+        return values[1] || SUBCATEGORIES[category][0] || 'その他';
+    }
 
-        // Render subcategory buttons based on current category
-        function renderSubcategories() {
-            const subcategories = SUBCATEGORIES[currentCategory] || [];
-            subcategoryContainer.innerHTML = '';
+    // Setup event listeners
+    function setupEventListeners() {
+        // Category buttons
+        categoryButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                categoryButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentCategory = this.dataset.category;
+                currentSubcategory = null;
+                renderSubcategories();
+                filterAndRenderCircles();
+            });
+        });
+        
+        // Search
+        searchInput.addEventListener('input', filterAndRenderCircles);
+        
+        // Foreigner friendly toggle
+        foreignerFriendly.addEventListener('change', filterAndRenderCircles);
+        
+        // Sort buttons
+        sortMembersBtn.addEventListener('click', function() {
+            sortMembersBtn.classList.toggle('active');
+            sortForeignMembersBtn.classList.remove('active');
+            filterAndRenderCircles();
+        });
+        
+        sortForeignMembersBtn.addEventListener('click', function() {
+            sortForeignMembersBtn.classList.toggle('active');
+            sortMembersBtn.classList.remove('active');
+            filterAndRenderCircles();
+        });
+    }
+
+    // Render subcategory buttons based on current category
+    function renderSubcategories() {
+        const subcategories = SUBCATEGORIES[currentCategory] || [];
+        subcategoryContainer.innerHTML = '';
+        
+        subcategories.forEach(subcat => {
+            const button = document.createElement('button');
+            button.className = 'subcategory-btn';
+            button.textContent = subcat;
+            button.dataset.subcategory = subcat;
             
-            subcategories.forEach(subcat => {
-                const button = document.createElement('button');
-                button.className = 'subcategory-btn';
-                button.textContent = subcat;
-                button.dataset.subcategory = subcat;
+            if (currentSubcategory === subcat) {
+                button.classList.add('active');
+            }
+            
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.subcategory-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
                 
                 if (currentSubcategory === subcat) {
-                    button.classList.add('active');
+                    currentSubcategory = null;
+                } else {
+                    this.classList.add('active');
+                    currentSubcategory = subcat;
                 }
                 
-                button.addEventListener('click', function() {
-                    document.querySelectorAll('.subcategory-btn').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    
-                    if (currentSubcategory === subcat) {
-                        currentSubcategory = null;
-                    } else {
-                        this.classList.add('active');
-                        currentSubcategory = subcat;
-                    }
-                    
-                    filterAndRenderCircles();
-                });
-                
-                subcategoryContainer.appendChild(button);
-            });
-        }
-
-        // Filter and render circles based on current filters
-        function filterAndRenderCircles() {
-            // Apply filters
-            filteredCircles = allCircles.filter(circle => {
-                // Category filter
-                if (circle.category !== currentCategory) return false;
-                
-                // Subcategory filter
-                if (currentSubcategory && circle.subcategory !== currentSubcategory) return false;
-                
-                // Foreigner friendly filter
-                if (foreignerFriendly.checked && circle.foreignMembers === 0) return false;
-                
-                // Search filter
-                const searchTerm = searchInput.value.toLowerCase();
-                if (searchTerm && !circle.name.toLowerCase().includes(searchTerm) && 
-                    !circle.description.toLowerCase().includes(searchTerm)) {
-                    return false;
-                }
-                
-                return true;
+                filterAndRenderCircles();
             });
             
-            // Apply sorting
-            if (sortMembersBtn.classList.contains('active')) {
-                filteredCircles.sort((a, b) => b.members - a.members);
-            } else if (sortForeignMembersBtn.classList.contains('active')) {
-                filteredCircles.sort((a, b) => b.foreignMembers - a.foreignMembers);
-            }
-            
-            // Reset to first page
-            currentPage = 1;
-            
-            // Render results
-            renderCircles();
-            renderPagination();
-            
-            // Show/hide no results message
-            if (filteredCircles.length === 0) {
-                noResults.style.display = 'block';
-            } else {
-                noResults.style.display = 'none';
-            }
-        }
+            subcategoryContainer.appendChild(button);
+        });
+    }
 
-        // Render circles for current page
-        function renderCircles() {
-            const startIndex = (currentPage - 1) * circlesPerPage;
-            const endIndex = startIndex + circlesPerPage;
-            const circlesToShow = filteredCircles.slice(startIndex, endIndex);
+    // Filter and render circles based on current filters
+    function filterAndRenderCircles() {
+        // Apply filters
+        filteredCircles = allCircles.filter(circle => {
+            // Category filter
+            if (circle.category !== currentCategory) return false;
             
-            circleGrid.innerHTML = '';
+            // Subcategory filter
+            if (currentSubcategory && circle.subcategory !== currentSubcategory) return false;
             
-            circlesToShow.forEach(circle => {
-                const card = document.createElement('div');
-                card.className = 'circle-card';
-                card.style.backgroundImage = `url(${circle.image || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'})`;
-                
-                card.innerHTML = `
-                    <div class="card-overlay">
-                        <div class="card-header">
-                            <div>
-                                <div class="circle-name">${circle.name}</div>
-                                <div class="circle-category">${circle.subcategory}</div>
-                            </div>
-                            ${circle.foreignMembers > 0 ? '<div class="foreigner-indicator" title="外国人メンバー在籍"></div>' : ''}
+            // Foreigner friendly filter
+            if (foreignerFriendly.checked && circle.foreignMembers === 0) return false;
+            
+            // Search filter
+            const searchTerm = searchInput.value.toLowerCase();
+            if (searchTerm && !circle.name.toLowerCase().includes(searchTerm) && 
+                !circle.description.toLowerCase().includes(searchTerm)) {
+                return false;
+            }
+            
+            return true;
+        });
+        
+        // Apply sorting
+        if (sortMembersBtn.classList.contains('active')) {
+            filteredCircles.sort((a, b) => b.members - a.members);
+        } else if (sortForeignMembersBtn.classList.contains('active')) {
+            filteredCircles.sort((a, b) => b.foreignMembers - a.foreignMembers);
+        }
+        
+        // Reset to first page
+        currentPage = 1;
+        
+        // Render results
+        renderCircles();
+        renderPagination();
+        
+        // Show/hide no results message
+        if (filteredCircles.length === 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+
+    // Render circles for current page
+    function renderCircles() {
+        const startIndex = (currentPage - 1) * circlesPerPage;
+        const endIndex = startIndex + circlesPerPage;
+        const circlesToShow = filteredCircles.slice(startIndex, endIndex);
+        
+        circleGrid.innerHTML = '';
+        
+        circlesToShow.forEach(circle => {
+            const card = document.createElement('div');
+            card.className = 'circle-card';
+            card.style.backgroundImage = `url(${circle.image || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'})`;
+            
+            card.innerHTML = `
+                <div class="card-overlay">
+                    <div class="card-header">
+                        <div>
+                            <div class="circle-name">${circle.name}</div>
+                            <div class="circle-category">${circle.subcategory}</div>
                         </div>
-                        <div class="card-footer">
-                            <div class="member-count">メンバー: ${circle.members}</div>
-                            ${circle.foreignMembers > 0 ? `<div class="member-count">外国人: ${circle.foreignMembers}</div>` : ''}
-                        </div>
+                        ${circle.foreignMembers > 0 ? '<div class="foreigner-indicator" title="外国人メンバー在籍"></div>' : ''}
                     </div>
-                `;
-                
-                card.addEventListener('click', () => showExpandedView(circle));
-                circleGrid.appendChild(card);
-            });
-        }
-
-        // Render pagination
-        function renderPagination() {
-            const totalPages = Math.ceil(filteredCircles.length / circlesPerPage);
-            
-            if (totalPages <= 1) {
-                pagination.innerHTML = '';
-                return;
-            }
-            
-            let paginationHTML = '';
-            
-            for (let i = 1; i <= totalPages; i++) {
-                paginationHTML += `
-                    <button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">
-                        ${i}
-                    </button>
-                `;
-            }
-            
-            pagination.innerHTML = paginationHTML;
-            
-            // Add event listeners to page buttons
-            document.querySelectorAll('.page-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    currentPage = parseInt(this.dataset.page);
-                    renderCircles();
-                    renderPagination();
-                });
-            });
-        }
-
-        // Show expanded view of a circle
-        function showExpandedView(circle) {
-            const expandedView = document.createElement('div');
-            expandedView.className = 'card-expanded';
-            expandedView.innerHTML = `
-                <div class="expanded-content">
-                    <button class="close-btn">&times;</button>
-                    <div class="expanded-header" style="background-image: url(${circle.image || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'})">
-                        <div class="expanded-overlay">
-                            <h2>${circle.name}</h2>
-                            <p>${circle.subcategory} • メンバー: ${circle.members} ${circle.foreignMembers > 0 ? `• 外国人: ${circle.foreignMembers}` : ''}</p>
-                        </div>
-                    </div>
-                    <div class="expanded-body">
-                        <div class="expanded-section">
-                            <h3>説明</h3>
-                            <p>${circle.description || '説明はありません'}</p>
-                        </div>
-                        
-                        ${circle.contact ? `
-                        <div class="expanded-section">
-                            <h3>連絡先</h3>
-                            <div class="contact-info">
-                                <p>${circle.contact}</p>
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        ${circle.events ? `
-                        <div class="expanded-section">
-                            <h3>イベント・活動</h3>
-                            <div class="event-info">
-                                <p>${circle.events}</p>
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        <div class="action-buttons">
-                            ${circle.contact ? `<button class="action-btn">連絡する</button>` : ''}
-                            ${circle.website ? `<a href="${circle.website}" target="_blank" class="action-btn">ウェブサイト</a>` : ''}
-                        </div>
+                    <div class="card-footer">
+                        <div class="member-count">メンバー: ${circle.members}</div>
+                        ${circle.foreignMembers > 0 ? `<div class="member-count">外国人: ${circle.foreignMembers}</div>` : ''}
                     </div>
                 </div>
             `;
             
-            document.body.appendChild(expandedView);
-            
-            // Close on X button
-            expandedView.querySelector('.close-btn').addEventListener('click', () => {
-                document.body.removeChild(expandedView);
-            });
-            
-            // Close on outside click
-            expandedView.addEventListener('click', (e) => {
-                if (e.target === expandedView) {
-                    document.body.removeChild(expandedView);
-                }
-            });
+            card.addEventListener('click', () => showExpandedView(circle));
+            circleGrid.appendChild(card);
+        });
+    }
+
+    // Render pagination
+    function renderPagination() {
+        const totalPages = Math.ceil(filteredCircles.length / circlesPerPage);
+        
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
         }
-    </script>
-</body>
-</html>
+        
+        let paginationHTML = '';
+        
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHTML += `
+                <button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">
+                    ${i}
+                </button>
+            `;
+        }
+        
+        pagination.innerHTML = paginationHTML;
+        
+        // Add event listeners to page buttons
+        document.querySelectorAll('.page-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                currentPage = parseInt(this.dataset.page);
+                renderCircles();
+                renderPagination();
+            });
+        });
+    }
+
+    // Show expanded view of a circle
+    function showExpandedView(circle) {
+        const expandedView = document.createElement('div');
+        expandedView.className = 'card-expanded';
+        expandedView.innerHTML = `
+            <div class="expanded-content">
+                <button class="close-btn">&times;</button>
+                <div class="expanded-header" style="background-image: url(${circle.image || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'})">
+                    <div class="expanded-overlay">
+                        <h2>${circle.name}</h2>
+                        <p>${circle.subcategory} • メンバー: ${circle.members} ${circle.foreignMembers > 0 ? `• 外国人: ${circle.foreignMembers}` : ''}</p>
+                    </div>
+                </div>
+                <div class="expanded-body">
+                    <div class="expanded-section">
+                        <h3>説明</h3>
+                        <p>${circle.description || '説明はありません'}</p>
+                    </div>
+                    
+                    ${circle.contact ? `
+                    <div class="expanded-section">
+                        <h3>連絡先</h3>
+                        <div class="contact-info">
+                            <p>${circle.contact}</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${circle.events ? `
+                    <div class="expanded-section">
+                        <h3>イベント・活動</h3>
+                        <div class="event-info">
+                            <p>${circle.events}</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="action-buttons">
+                        ${circle.contact ? `<button class="action-btn">連絡する</button>` : ''}
+                        ${circle.website ? `<a href="${circle.website}" target="_blank" class="action-btn">ウェブサイト</a>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(expandedView);
+        
+        // Close on X button
+        expandedView.querySelector('.close-btn').addEventListener('click', () => {
+            document.body.removeChild(expandedView);
+        });
+        
+        // Close on outside click
+        expandedView.addEventListener('click', (e) => {
+            if (e.target === expandedView) {
+                document.body.removeChild(expandedView);
+            }
+        });
+    }
+</
