@@ -619,8 +619,8 @@
     academic: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZeeFkaYJYzjzoCxucwMTaaGTD6tpyNCpZVhocgNcAcT5F-pSm4r_ext7Kzl4J4Olwayz-q_pnKGEa/pub?output=csv",
     media: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRF1QkL3Vno2tBzRQD0ZcNKa0oFwfUFcB8wpd9yPJI-Un-bMfD2ywrT4wqwri9piY8YEKjsY839_YfX/pub?output=csv",
     culture: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzOY7j83L-BB2dAs7738lO9w7sEu_lUbk0mLri2tnq15xAQZonEzfw6j7nfQPpgiaHv6YWCDfXuwSQ/pub?output=csv",
-    international: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP8yHtBqDWLn32hMoYaiJIS3jyq2Ttv9nUQn7B2Nxh6d1VAMMSv4KKOdCMQRSA_npTzCbVUHvwI3i2/puboutput=csv”,
-    other: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTysfxHQrwVeF0UmbKOJx2fFe-gcJGKUqyT2LdF314ehOXnaSU-LyzV96Bl4tWIiACsd_S3bGoF9YYI/pub?output=csv"
+international: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRP8yHtBqDWLn32hMoYaiJIS3jyq2Ttv9nUQn7B2Nxh6d1VAMMSv4KKOdCMQRSA_npTzCbVUHvwI3i2/pub?output=csv",    
+            other: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTysfxHQrwVeF0UmbKOJx2fFe-gcJGKUqyT2LdF314ehOXnaSU-LyzV96Bl4tWIiACsd_S3bGoF9YYI/pub?output=csv"
 };
         // Subcategory mapping
 const SUBCATEGORIES = {
@@ -640,85 +640,180 @@ const SUBCATEGORIES = {
         let currentPage = 1;
         const circlesPerPage = 12;
 
-        // DOM elements
-        const circleGrid = document.getElementById('circleGrid');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const noResults = document.getElementById('noResults');
-        const pagination = document.getElementById('pagination');
-        const searchInput = document.getElementById('searchInput');
-        const categoryButtons = document.querySelectorAll('.category-btn');
-        const subcategoryContainer = document.getElementById('subcategoryContainer');
-        const foreignerFriendly = document.getElementById('foreignerFriendly');
-        const sortMembersBtn = document.getElementById('sortMembers');
-        const sortForeignMembersBtn = document.getElementById('sortForeignMembers');
+// DOM elements
+const circleGrid = document.getElementById('circleGrid');
+const loadingSpinner = document.getElementById('loadingSpinner');
+const noResults = document.getElementById('noResults');
+const pagination = document.getElementById('pagination');
+const searchInput = document.getElementById('searchInput');
+const categoryButtons = document.querySelectorAll('.category-btn');
+const subcategoryContainer = document.getElementById('subcategoryContainer');
+const foreignerFriendly = document.getElementById('foreignerFriendly');
+const sortMembersBtn = document.getElementById('sortMembers');
+const sortForeignMembersBtn = document.getElementById('sortForeignMembers');
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            loadAllData();
-            setupEventListeners();
-        });
+// ========== DEBUGGING CODE ==========
+console.log("🔧 === CONFIGURATION CHECK ===");
+console.log("Current SHEET_URLS:", SHEET_URLS);
+console.log("Categories in SHEET_URLS:", Object.keys(SHEET_URLS));
+console.log("Categories in SUBCATEGORIES:", Object.keys(SUBCATEGORIES));
+console.log("Initial currentCategory:", currentCategory);
 
-        // Load data from all sheets
-        async function loadAllData() {
+// Check each URL
+Object.entries(SHEET_URLS).forEach(([category, url]) => {
+    console.log(`${category}: ${url}`);
+    if (!url.includes('pub?output=csv')) {
+        console.warn(`⚠️ ${category} URL might be wrong format. Should end with pub?output=csv`);
+    }
+    if (!url.startsWith('https://')) {
+        console.error(`❌ ${category} URL is not HTTPS!`);
+    }
+});
+console.log("==============================");
+// ========== END DEBUGGING ==========
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🚀 DOM loaded, starting application...");
+    loadAllData();
+    setupEventListeners();
+});
+
+// Load data from all sheets
+async function loadAllData() {
+    try {
+        loadingSpinner.style.display = 'block';
+        loadingSpinner.textContent = 'データを読み込み中...';
+        console.log("🚀 Starting to load all data...");
+        
+        const promises = Object.entries(SHEET_URLS).map(async ([category, url]) => {
             try {
-                loadingSpinner.style.display = 'block';
-                
-                const promises = Object.entries(SHEET_URLS).map(async ([category, url]) => {
-                    const circles = await fetchSheetData(url, category);
-                    return circles.map(circle => ({...circle, category}));
-                });
-                
-                const results = await Promise.all(promises);
-                allCircles = results.flat();
-                
-                loadingSpinner.style.display = 'none';
-                renderSubcategories();
-                filterAndRenderCircles();
+                const circles = await fetchSheetData(url, category);
+                return circles.map(circle => ({...circle, category}));
             } catch (error) {
-                console.error('Error loading data:', error);
-                loadingSpinner.textContent = 'データの読み込みに失敗しました';
-            }
-        }
-
-        // Fetch and parse CSV data
-        async function fetchSheetData(url, category) {
-            try {
-                const response = await fetch(url);
-                const csvText = await response.text();
-                return parseCSV(csvText, category);
-            } catch (error) {
-                console.error(`Error fetching ${category} data:`, error);
+                console.error(`💥 Failed to load ${category}:`, error);
                 return [];
             }
+        });
+        
+        const results = await Promise.all(promises);
+        allCircles = results.flat();
+        
+        console.log("=================================");
+        console.log("📈 TOTAL CIRCLES LOADED:", allCircles.length);
+        console.log("=================================");
+        
+        if (allCircles.length === 0) {
+            loadingSpinner.textContent = 'データが見つかりませんでした。Google SheetのURLを確認してください。';
+            loadingSpinner.style.color = 'var(--maroon)';
+            console.error("❌ No circles loaded. Check your Google Sheet URLs and publishing settings.");
+            return;
         }
+        
+        loadingSpinner.style.display = 'none';
+        renderSubcategories();
+        filterAndRenderCircles();
+        
+    } catch (error) {
+        console.error('💥 Critical error in loadAllData:', error);
+        loadingSpinner.textContent = `読み込みエラー: ${error.message}`;
+        loadingSpinner.style.color = 'red';
+    }
+}
+        
+        loadingSpinner.style.display = 'none';
+        renderSubcategories();
+        filterAndRenderCircles();
+    } catch (error) {
+        console.error('Main error loading data:', error);
+        loadingSpinner.textContent = `データの読み込みに失敗しました: ${error.message}`;
+        loadingSpinner.style.color = 'red';
+    }
+}
 
-        // Parse CSV data
-        function parseCSV(csvText, category) {
-            const lines = csvText.split('\n');
-            const headers = lines[0].split(',').map(h => h.trim());
+// Fetch and parse CSV data
+async function fetchSheetData(url, category) {
+    try {
+        console.log(`🔍 Fetching ${category} from:`, url);
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const csvText = await response.text();
+        console.log(`✅ ${category} loaded, length: ${csvText.length} chars`);
+        
+        if (!csvText || csvText.trim().length === 0) {
+            console.warn(`⚠️ ${category} CSV is empty`);
+            return [];
+        }
+        
+        // Check first line
+        const firstLine = csvText.split('\n')[0];
+        console.log(`📝 ${category} headers:`, firstLine);
+        
+        const circles = parseCSV(csvText, category);
+        console.log(`📊 ${category} parsed: ${circles.length} circles`);
+        
+        return circles;
+    } catch (error) {
+        console.error(`❌ Error fetching ${category} data from ${url}:`, error);
+        console.error(`Error message: ${error.message}`);
+        return []; // Return empty array to prevent breaking
+    }
+}
+
+// Parse CSV data
+function parseCSV(csvText, category) {
+    try {
+        const lines = csvText.split('\n');
+        console.log(`📄 ${category} has ${lines.length} lines`);
+        
+        if (lines.length < 2) {
+            console.warn(`⚠️ ${category} CSV has no data rows`);
+            return [];
+        }
+        
+        const headers = lines[0].split(',').map(h => h.trim());
+        console.log(`🏷️ ${category} headers:`, headers);
+        
+        const circles = [];
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue; // Skip empty lines
             
-            const circles = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',').map(v => v.trim());
-                if (values.length < 2 || !values[0]) continue;
-                
-                const circle = {
-                    name: values[0] || '名称不明',
-                    subcategory: getSubcategoryFromRow(values, category),
-                    description: values[2] || '説明なし',
-                    members: parseInt(values[3]) || 0,
-                    foreignMembers: parseInt(values[4]) || 0,
-                    contact: values[5] || '',
-                    website: values[6] || '',
-                    events: values[7] || '',
-                    image: values[8] || ''
-                };
-                
-                circles.push(circle);
+            const values = line.split(',').map(v => v.trim());
+            console.log(`📋 Line ${i}:`, values);
+            
+            if (values.length < 2 || !values[0]) {
+                console.warn(`⚠️ Skipping invalid row ${i} in ${category}`);
+                continue;
             }
             
-            return circles;
+            const circle = {
+                name: values[0] || '名称不明',
+                subcategory: getSubcategoryFromRow(values, category),
+                description: values[2] || '説明なし',
+                members: parseInt(values[3]) || 0,
+                foreignMembers: parseInt(values[4]) || 0,
+                contact: values[5] || '',
+                website: values[6] || '',
+                events: values[7] || '',
+                image: values[8] || ''
+            };
+            
+            console.log(`✅ Circle ${i}: ${circle.name}`);
+            circles.push(circle);
         }
+        
+        console.log(`🎯 ${category} total circles: ${circles.length}`);
+        return circles;
+    } catch (error) {
+        console.error(`❌ Error parsing ${category} CSV:`, error);
+        return [];
+    }
+}
 
 // Determine subcategory based on row data and category
 function getSubcategoryFromRow(values, category) {
