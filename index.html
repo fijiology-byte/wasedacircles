@@ -792,21 +792,17 @@
             const headers = parseCSVLine(lines[0]);
             console.log("CSV Headers for", category, ":", headers);
             
-            // Find column indexes based on header names
-            const nameIndex = headers.findIndex(h => h.includes('サークル名') || h.includes('名称') || h.includes('名前') || h.includes('Name'));
-            const subcategoryIndex = headers.findIndex(h => h.includes('カテゴリ') || h.includes('種類') || h.includes('分類') || h.includes('Category'));
-            const membersIndex = headers.findIndex(h => h.includes('所属人数') || h.includes('メンバー') || h.includes('人数') || h.includes('Members'));
-            const foreignMembersIndex = headers.findIndex(h => 
-                h.includes('外国学生の受け入れ') || 
-                h.includes('外国人学生') || 
-                h.includes('留学生') || 
-                h.includes('Foreign Students')
-            );
-            const descriptionIndex = headers.findIndex(h => h.includes('説明') || h.includes('詳細') || h.includes('概要') || h.includes('Description'));
-            const contactIndex = headers.findIndex(h => h.includes('連絡先') || h.includes('コンタクト') || h.includes('Contact'));
-            const websiteIndex = headers.findIndex(h => h.includes('ウェブサイト') || h.includes('Website') || h.includes('URL'));
-            const eventsIndex = headers.findIndex(h => h.includes('イベント') || h.includes('活動') || h.includes('Events'));
-            const imageIndex = headers.findIndex(h => h.includes('画像') || h.includes('Image') || h.includes('写真'));
+            // Based on your column order: 名前, カテゴリ種類, 活動内容, 活動日時・場所, 所属人数, 外国人学生の受け入れ
+            const nameIndex = 0; // 名前
+            const subcategoryIndex = 1; // カテゴリ種類
+            const descriptionIndex = 2; // 活動内容
+            const eventsIndex = 3; // 活動日時・場所
+            const membersIndex = 4; // 所属人数
+            const foreignMembersIndex = 5; // 外国人学生の受け入れ
+            // These columns might not exist in your CSV
+            const contactIndex = 6;
+            const websiteIndex = 7;
+            const imageIndex = 8;
             
             console.log("Column indexes found for", category, ":", {
                 name: nameIndex,
@@ -822,15 +818,15 @@
                 if (values.length < 2 || !values[0]) continue;
                 
                 const circle = {
-                    name: nameIndex >= 0 ? values[nameIndex] || '名称不明' : values[0] || '名称不明',
+                    name: values[nameIndex] || '名称不明',
                     subcategory: getSubcategoryFromRow(values, category),
-                    description: descriptionIndex >= 0 ? values[descriptionIndex] || '説明なし' : '説明なし',
-                    members: membersIndex >= 0 ? parseInt(values[membersIndex]) || 0 : 0,
-                    foreignMembers: foreignMembersIndex >= 0 ? parseInt(values[foreignMembersIndex]) || 0 : 0,
-                    contact: contactIndex >= 0 ? values[contactIndex] || '' : '',
-                    website: websiteIndex >= 0 ? values[websiteIndex] || '' : '',
-                    events: eventsIndex >= 0 ? values[eventsIndex] || '' : '',
-                    image: imageIndex >= 0 ? values[imageIndex] || '' : ''
+                    description: values[descriptionIndex] || '説明なし',
+                    members: parseInt(values[membersIndex]) || 0,
+                    foreignMembers: parseInt(values[foreignMembersIndex]) || 0,
+                    contact: values[contactIndex] || '',
+                    website: values[websiteIndex] || '',
+                    events: values[eventsIndex] || '',
+                    image: values[imageIndex] || ''
                 };
                 
                 circles.push(circle);
