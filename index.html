@@ -525,6 +525,26 @@
                 padding-bottom: 0.5rem;
             }
         }
+
+        /* Refresh Button Hover Effects */
+        #refreshBtn {
+            transition: all 0.3s ease;
+        }
+        
+        #refreshBtn:hover {
+            background-color: #6B0000 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        
+        #refreshBtn:active {
+            transform: translateY(0);
+        }
+        
+        #refreshBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -1019,6 +1039,97 @@
                 }
             });
         }
+    }
     </script>
+
+  <!-- Refresh Button -->
+  <div id="refreshContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <button id="refreshBtn" style="padding: 10px 15px; background: #8B0000; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+      データを更新 🔄
+    </button>
+    <div id="refreshMessage" style="display: none; margin-top: 5px; padding: 5px; background: white; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; text-align: center;">
+      最終更新: <span id="lastUpdateTime">--:--:--</span>
+    </div>
+  </div>
+
+  <script>
+    // Refresh button elements
+    const refreshBtn = document.getElementById('refreshBtn');
+    const refreshMessage = document.getElementById('refreshMessage');
+    const lastUpdateTime = document.getElementById('lastUpdateTime');
+
+    // Update timestamp function
+    function updateTimestamp() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('ja-JP', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      lastUpdateTime.textContent = timeString;
+      refreshMessage.style.display = 'block';
+    }
+
+    // Initialize timestamp when page loads
+    updateTimestamp();
+
+    // Handle refresh button click
+    async function handleRefreshClick() {
+      if (!refreshBtn) return;
+      
+      // Show loading state
+      refreshBtn.innerHTML = '更新中... ⏳';
+      refreshBtn.disabled = true;
+      
+      // Save current scroll position
+      const scrollPosition = window.scrollY;
+      
+      try {
+        // Reload all data
+        loadingSpinner.style.display = 'block';
+        loadingSpinner.textContent = 'データを更新中...';
+        
+        // Clear current data
+        allCircles = [];
+        filteredCircles = [];
+        
+        // Reload fresh data
+        await loadAllData();
+        
+        // Update timestamp
+        updateTimestamp();
+        
+        // Show success message temporarily
+        refreshBtn.innerHTML = '更新完了 ✅';
+        refreshBtn.style.backgroundColor = '#2E8B57'; // Green
+        
+        // Restore original button after 2 seconds
+        setTimeout(() => {
+          refreshBtn.innerHTML = 'データを更新 🔄';
+          refreshBtn.style.backgroundColor = ''; // Reset to CSS color
+          refreshBtn.disabled = false;
+        }, 2000);
+        
+        // Restore scroll position
+        window.scrollTo(0, scrollPosition);
+        
+      } catch (error) {
+        console.error('Refresh failed:', error);
+        refreshBtn.innerHTML = '更新失敗 ❌';
+        refreshBtn.style.backgroundColor = '#DC143C'; // Red
+        
+        setTimeout(() => {
+          refreshBtn.innerHTML = 'データを更新 🔄';
+          refreshBtn.style.backgroundColor = '';
+          refreshBtn.disabled = false;
+        }, 3000);
+      }
+    }
+
+    // Add refresh button event listener
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', handleRefreshClick);
+    }
+  </script>
 </body>
 </html>
