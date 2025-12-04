@@ -788,32 +788,50 @@
                 return [];
             }
             
+            // Parse header row to find column indexes
+            const headers = parseCSVLine(lines[0]);
+            console.log("CSV Headers for", category, ":", headers);
+            
+            // Find column indexes based on header names
+            const nameIndex = headers.findIndex(h => h.includes('サークル名') || h.includes('名称') || h.includes('名前') || h.includes('Name'));
+            const subcategoryIndex = headers.findIndex(h => h.includes('カテゴリ') || h.includes('種類') || h.includes('分類') || h.includes('Category'));
+            const membersIndex = headers.findIndex(h => h.includes('所属人数') || h.includes('メンバー') || h.includes('人数') || h.includes('Members'));
+            const foreignMembersIndex = headers.findIndex(h => 
+                h.includes('外国学生の受け入れ') || 
+                h.includes('外国人学生') || 
+                h.includes('留学生') || 
+                h.includes('Foreign Students')
+            );
+            const descriptionIndex = headers.findIndex(h => h.includes('説明') || h.includes('詳細') || h.includes('概要') || h.includes('Description'));
+            const contactIndex = headers.findIndex(h => h.includes('連絡先') || h.includes('コンタクト') || h.includes('Contact'));
+            const websiteIndex = headers.findIndex(h => h.includes('ウェブサイト') || h.includes('Website') || h.includes('URL'));
+            const eventsIndex = headers.findIndex(h => h.includes('イベント') || h.includes('活動') || h.includes('Events'));
+            const imageIndex = headers.findIndex(h => h.includes('画像') || h.includes('Image') || h.includes('写真'));
+            
+            console.log("Column indexes found for", category, ":", {
+                name: nameIndex,
+                subcategory: subcategoryIndex,
+                members: membersIndex,
+                foreignMembers: foreignMembersIndex,
+                description: descriptionIndex
+            });
+            
             const circles = [];
             for (let i = 1; i < lines.length; i++) {
                 const values = parseCSVLine(lines[i]);
                 if (values.length < 2 || !values[0]) continue;
                 
                 const circle = {
-                    name: values[0] || '名称不明',
+                    name: nameIndex >= 0 ? values[nameIndex] || '名称不明' : values[0] || '名称不明',
                     subcategory: getSubcategoryFromRow(values, category),
-                    description: values[2] || '説明なし',
-                    members: parseInt(values[3]) || 0,
-                    foreignMembers: parseInt(values[4]) || 0,
-                    contact: values[5] || '',
-                    website: values[6] || '',
-                    events: values[7] || '',
-                    image: values[8] || ''
+                    description: descriptionIndex >= 0 ? values[descriptionIndex] || '説明なし' : '説明なし',
+                    members: membersIndex >= 0 ? parseInt(values[membersIndex]) || 0 : 0,
+                    foreignMembers: foreignMembersIndex >= 0 ? parseInt(values[foreignMembersIndex]) || 0 : 0,
+                    contact: contactIndex >= 0 ? values[contactIndex] || '' : '',
+                    website: websiteIndex >= 0 ? values[websiteIndex] || '' : '',
+                    events: eventsIndex >= 0 ? values[eventsIndex] || '' : '',
+                    image: imageIndex >= 0 ? values[imageIndex] || '' : ''
                 };
-                
-                // Debug log for first few circles
-                if (circles.length < 3) {
-                    console.log(`Circle ${circles.length}:`, {
-                        name: circle.name,
-                        values: values,
-                        membersIndex3: values[3],
-                        parsedMembers: circle.members
-                    });
-                }
                 
                 circles.push(circle);
             }
