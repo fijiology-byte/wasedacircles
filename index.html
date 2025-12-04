@@ -856,33 +856,17 @@ function parseCSV(csvText, category) {
         
         // Debug: log first 3 circles to see what values we're getting
         if (circles.length < 3) {
-            console.log(`🔍 Debug circle #${circles.length + 1} from ${category}:`, {
-                // Raw values from CSV (entire row)
-                'All values array': values,
-                'Number of columns': values.length,
-                // Column by column with indexes
-                'Column 0 (名前)': values[0] || '(empty)',
-                'Column 1 (カテゴリ種類)': values[1] || '(empty)',
-                'Column 2 (活動内容)': values[2]?.substring(0, 50) + '...' || '(empty)',
-                'Column 3 (活動日時・場所)': values[3] || '(empty)',
-                'Column 4 (所属人数)': values[4] || '(empty)',
-                'Column 5 (外国人学生)': values[5] || '(empty)',
-                // Parsed results
-                'Parsed name': circle.name,
-                'Parsed members (raw)': values[membersIndex],
-                'Parsed members (number)': circle.members,
-                'Parsed foreign members (raw)': values[foreignMembersIndex],
-                'Parsed foreign members (number)': circle.foreignMembers,
-                // Indexes being used
-                'Using nameIndex': nameIndex,
-                'Using membersIndex': membersIndex,
-                'Using foreignMembersIndex': foreignMembersIndex
+            console.log(`Debug circle ${circles.length} from ${category}:`, {
+                name: circle.name,
+                membersRaw: values[membersIndex],
+                membersParsed: circle.members,
+                foreignRaw: values[foreignMembersIndex],
+                foreignParsed: circle.foreignMembers,
+                values: values
             });
-            console.log('---');
         }
         
         circles.push(circle);
-        
     }
     
     console.log(`📊 ${category} parsed: ${circles.length} circles`);
@@ -906,7 +890,7 @@ function parseCSV(csvText, category) {
                     } else {
                         inQuotes = !inQuotes;
                     }
-                } else if (char === '\t' && !inQuotes) {
+                } else if (char === ',' && !inQuotes) {
                     result.push(current.trim());
                     current = '';
                 } else {
