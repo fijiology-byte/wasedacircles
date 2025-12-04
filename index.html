@@ -369,9 +369,8 @@
             justify-content: center;
             align-items: center;
             z-index: 2000;
-            padding: 2rem;
+            /* Remove padding from here */
         }
-
         .expanded-content {
             background-color: var(--white);
             border-radius: 8px;
@@ -648,6 +647,16 @@
         </div>
     </footer>
 
+  <!-- Refresh Button -->
+  <div id="refreshContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <button id="refreshBtn" style="padding: 10px 15px; background: #8B0000; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+      データを更新 🔄
+    </button>
+    <div id="refreshMessage" style="display: none; margin-top: 5px; padding: 5px; background: white; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; text-align: center;">
+      最終更新: <span id="lastUpdateTime">--:--:--</span>
+    </div>
+  </div>
+
     <script>
         // Configuration
         const SHEET_URLS = {
@@ -778,63 +787,91 @@
             }
         }
 
-        // Parse CSV data
-        function parseCSV(csvText, category) {
-            const lines = csvText.split('\n');
-            console.log(`📄 ${category} has ${lines.length} lines`);
-            
-            if (lines.length < 2) {
-                console.warn(`⚠️ ${category} CSV has no data rows`);
-                return [];
+// Determine subcategory based on row data and category
+function getSubcategoryFromRow(values, category) {
+    // For non_ball_sports and ball_sports, check which subcategory
+    if (category === 'non_ball_sports' || category === 'ball_sports') {
+        const subcategories = SUBCATEGORIES[category];
+        for (const subcat of subcategories) {
+            if (values[1] && values[1].includes(subcat)) {
+                return subcat;
             }
-            
-            // Parse header row to find column indexes
-            const headers = parseCSVLine(lines[0]);
-            console.log("CSV Headers for", category, ":", headers);
-            
-            // Based on your column order: 名前, カテゴリ種類, 活動内容, 活動日時・場所, 所属人数, 外国人学生の受け入れ
-            const nameIndex = 0; // 名前
-            const subcategoryIndex = 1; // カテゴリ種類
-            const descriptionIndex = 2; // 活動内容
-            const eventsIndex = 3; // 活動日時・場所
-            const membersIndex = 4; // 所属人数
-            const foreignMembersIndex = 5; // 外国人学生の受け入れ
-            // These columns might not exist in your CSV
-            const contactIndex = 6;
-            const websiteIndex = 7;
-            const imageIndex = 8;
-            
-            console.log("Column indexes found for", category, ":", {
-                name: nameIndex,
-                subcategory: subcategoryIndex,
-                members: membersIndex,
-                foreignMembers: foreignMembersIndex,
-                description: descriptionIndex
-            });
-            
-            const circles = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = parseCSVLine(lines[i]);
-                if (values.length < 2 || !values[0]) continue;
-                
-                const circle = {
-                    name: values[nameIndex] || '名称不明',
-                    subcategory: getSubcategoryFromRow(values, category),
-                    description: values[descriptionIndex] || '説明なし',
-                    members: parseInt(values[membersIndex]) || 0,
-                    foreignMembers: parseInt(values[foreignMembersIndex]) || 0,
-                    contact: values[contactIndex] || '',
-                    website: values[websiteIndex] || '',
-                    events: values[eventsIndex] || '',
-                    image: values[imageIndex] || ''
-                };
-                
-                circles.push(circle);
-            }
-            
-            console.log(`📊 ${category} parsed: ${circles.length} circles`);
-            return circles;
         }
+    }
+    
+    // For other categories, return the value in column 1 (index 1)
+    return values[1] || SUBCATEGORIES[category][0] || 'その他';
+}
+
+// Parse CSV data
+function parseCSV(csvText, category) {
+    const lines = csvText.split('\n');
+    console.log(`📄 ${category} has ${lines.length} lines`);
+    
+    if (lines.length < 2) {
+        console.warn(`⚠️ ${category} CSV has no data rows`);
+        return [];
+    }
+    
+    // Parse header row to find column indexes
+    const headers = parseCSVLine(lines[0]);
+    console.log("CSV Headers for", category, ":", headers);
+    
+    // Based on your column order: 名前, カテゴリ種類, 活動内容, 活動日時・場所, 所属人数, 外国人学生の受け入れ
+    const nameIndex = 0; // 名前
+    const subcategoryIndex = 1; // カテゴリ種類
+    const descriptionIndex = 2; // 活動内容
+    const eventsIndex = 3; // 活動日時・場所
+    const membersIndex = 4; // 所属人数
+    const foreignMembersIndex = 5; // 外国人学生の受け入れ
+    // These columns might not exist in your CSV
+    const contactIndex = 6;
+    const websiteIndex = 7;
+    const imageIndex = 8;
+    
+    console.log("Column indexes found for", category, ":", {
+        name: nameIndex,
+        subcategory: subcategoryIndex,
+        members: membersIndex,
+        foreignMembers: foreignMembersIndex,
+        description: descriptionIndex
+    });
+    
+    const circles = [];
+    for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        if (values.length < 2 || !values[0]) continue;
+        
+        const circle = {
+            name: values[nameIndex] || '名称不明',
+            subcategory: getSubcategoryFromRow(values, category),
+            description: values[descriptionIndex] || '説明なし',
+            members: extractNumber(values[membersIndex]) || 0,
+            foreignMembers: extractNumber(values[foreignMembersIndex]) || 0,
+            contact: values[contactIndex] || '',
+            website: values[websiteIndex] || '',
+            events: values[eventsIndex] || '',
+            image: values[imageIndex] || ''
+        };
+        
+        // Debug: log first 3 circles to see what values we're getting
+        if (circles.length < 3) {
+            console.log(`Debug circle ${circles.length} from ${category}:`, {
+                name: circle.name,
+                membersRaw: values[membersIndex],
+                membersParsed: circle.members,
+                foreignRaw: values[foreignMembersIndex],
+                foreignParsed: circle.foreignMembers,
+                values: values
+            });
+        }
+        
+        circles.push(circle);
+    }
+    
+    console.log(`📊 ${category} parsed: ${circles.length} circles`);
+    return circles;
+}
 
         // Proper CSV line parser that handles quoted fields
         function parseCSVLine(line) {
@@ -873,20 +910,12 @@
             });
         }
 
-        // Determine subcategory based on row data and category
-        function getSubcategoryFromRow(values, category) {
-            // For non_ball_sports, check which subcategory
-            if (category === 'non_ball_sports') {
-                const subcategories = SUBCATEGORIES.non_ball_sports;
-                for (const subcat of subcategories) {
-                    if (values[1] && values[1].includes(subcat)) {
-                        return subcat;
-                    }
-                }
-            }
-            
-            // For other categories, return the value in column 1 (index 1)
-            return values[1] || SUBCATEGORIES[category][0] || 'その他';
+        // Extract number from string (handles "56人", "56", etc.)
+        function extractNumber(str) {
+            if (!str) return 0;
+            // Remove all non-digit characters
+            const numStr = str.replace(/[^\d]/g, '');
+            return parseInt(numStr) || 0;
         }
 
         // setupEventListeners function is defined below
@@ -1047,8 +1076,7 @@
                     <div class="expanded-header" style="background-image: url(${circle.image || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'})">
                         <div class="expanded-overlay">
                             <h2>${circle.name}</h2>
-                            <p>${circle.subcategory} • メンバー: ${circle.members} ${circle.foreignMembers > 0 ? `• 外国人: ${circle.foreignMembers}` : ''}</p>
-                        </div>
+                            <p>${circle.subcategory} • メンバー: ${circle.members}人 ${circle.foreignMembers > 0 ? `• 外国人学生: ${circle.foreignMembers}人` : ''}</p>                        </div>
                     </div>
                     <div class="expanded-body">
                         <div class="expanded-section">
@@ -1200,19 +1228,7 @@
             setupRefreshButton();
         }
 
-        // Initialize the application
-        initializeApp();
     </script>
-
-  <!-- Refresh Button -->
-  <div id="refreshContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
-    <button id="refreshBtn" style="padding: 10px 15px; background: #8B0000; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-      データを更新 🔄
-    </button>
-    <div id="refreshMessage" style="display: none; margin-top: 5px; padding: 5px; background: white; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; text-align: center;">
-      最終更新: <span id="lastUpdateTime">--:--:--</span>
-    </div>
-  </div>
 
 </body>
 </html>
