@@ -774,7 +774,7 @@
             
             const circles = [];
             for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',').map(v => v.trim());
+                const values = parseCSVLine(lines[i]);
                 if (values.length < 2 || !values[0]) continue;
                 
                 const circle = {
@@ -794,6 +794,43 @@
             
             console.log(`📊 ${category} parsed: ${circles.length} circles`);
             return circles;
+        }
+
+        // Proper CSV line parser that handles quoted fields
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    // Handle escaped quotes (two quotes in a row)
+                    if (i + 1 < line.length && line[i + 1] === '"') {
+                        current += '"';
+                        i++; // Skip the next quote
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            // Add the last field
+            result.push(current.trim());
+            
+            // Remove surrounding quotes from each field
+            return result.map(field => {
+                if (field.startsWith('"') && field.endsWith('"')) {
+                    return field.substring(1, field.length - 1);
+                }
+                return field;
+            });
         }
 
         // Determine subcategory based on row data and category
