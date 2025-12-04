@@ -525,6 +525,53 @@
                 padding-bottom: 0.5rem;
             }
         }
+
+        /* Refresh Button Styles */
+        #refreshContainer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        #refreshBtn {
+            padding: 10px 15px;
+            background: #8B0000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        #refreshBtn:hover {
+            background-color: #6B0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        #refreshBtn:active {
+            transform: translateY(0);
+        }
+
+        #refreshBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #refreshMessage {
+            display: none;
+            margin-top: 5px;
+            padding: 5px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -611,6 +658,16 @@
         </div>
     </footer>
 
+    <!-- Refresh Button -->
+    <div id="refreshContainer">
+        <button id="refreshBtn">
+            データを更新 🔄
+        </button>
+        <div id="refreshMessage">
+            最終更新: <span id="lastUpdateTime">--:--:--</span>
+        </div>
+    </div>
+
     <script>
         // Configuration
         const SHEET_URLS = {
@@ -652,6 +709,11 @@
         const sortMembersBtn = document.getElementById('sortMembers');
         const sortForeignMembersBtn = document.getElementById('sortForeignMembers');
 
+        // Refresh button elements
+        const refreshBtn = document.getElementById('refreshBtn');
+        const refreshMessage = document.getElementById('refreshMessage');
+        const lastUpdateTime = document.getElementById('lastUpdateTime');
+
         // Debugging
         console.log("🔧 === CONFIGURATION CHECK ===");
         console.log("Categories in SHEET_URLS:", Object.keys(SHEET_URLS));
@@ -663,7 +725,20 @@
             console.log("🚀 DOM loaded, starting application...");
             loadAllData();
             setupEventListeners();
+            updateTimestamp(); // Show initial timestamp
         });
+
+        // Update timestamp function
+        function updateTimestamp() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ja-JP', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            lastUpdateTime.textContent = timeString;
+            refreshMessage.style.display = 'block';
+        }
 
         // Load data from all sheets
         async function loadAllData() {
@@ -814,6 +889,62 @@
                 sortMembersBtn.classList.remove('active');
                 filterAndRenderCircles();
             });
+            
+            // Refresh button
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', handleRefreshClick);
+            }
+        }
+
+        // Handle refresh button click
+        async function handleRefreshClick() {
+            // Show loading state
+            refreshBtn.innerHTML = '更新中... ⏳';
+            refreshBtn.disabled = true;
+            
+            // Save current scroll position
+            const scrollPosition = window.scrollY;
+            
+            try {
+                // Reload all data
+                loadingSpinner.style.display = 'block';
+                loadingSpinner.textContent = 'データを更新中...';
+                
+                // Clear current data
+                allCircles = [];
+                filteredCircles = [];
+                
+                // Reload fresh data
+                await loadAllData();
+                
+                // Update timestamp
+                updateTimestamp();
+                
+                // Show success message temporarily
+                refreshBtn.innerHTML = '更新完了 ✅';
+                refreshBtn.style.backgroundColor = '#2E8B57'; // Green
+                
+                // Restore original button after 2 seconds
+                setTimeout(() => {
+                    refreshBtn.innerHTML = 'データを更新 🔄';
+                    refreshBtn.style.backgroundColor = ''; // Reset to CSS color
+                    refreshBtn.disabled = false;
+                }, 2000);
+                
+                // Restore scroll position
+                window.scrollTo(0, scrollPosition);
+                
+            } catch (error) {
+                console.error('Refresh failed:', error);
+                refreshBtn.innerHTML = '更新失敗 ❌';
+                refreshBtn.style.backgroundColor = '#DC143C'; // Red
+                
+                setTimeout(() => {
+                    refreshBtn.innerHTML = 'データを更新 🔄';
+                    refreshBtn.style.backgroundColor = '';
+                    refreshBtn.disabled = false;
+                }, 3000);
+            }
         }
 
         // Render subcategory buttons based on current category
@@ -969,56 +1100,4 @@
                     <button class="close-btn">&times;</button>
                     <div class="expanded-header" style="background-image: url(${circle.image || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'})">
                         <div class="expanded-overlay">
-                            <h2>${circle.name}</h2>
-                            <p>${circle.subcategory} • メンバー: ${circle.members} ${circle.foreignMembers > 0 ? `• 外国人: ${circle.foreignMembers}` : ''}</p>
-                        </div>
-                    </div>
-                    <div class="expanded-body">
-                        <div class="expanded-section">
-                            <h3>説明</h3>
-                            <p>${circle.description || '説明はありません'}</p>
-                        </div>
-                        
-                        ${circle.contact ? `
-                        <div class="expanded-section">
-                            <h3>連絡先</h3>
-                            <div class="contact-info">
-                                <p>${circle.contact}</p>
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        ${circle.events ? `
-                        <div class="expanded-section">
-                            <h3>イベント・活動</h3>
-                            <div class="event-info">
-                                <p>${circle.events}</p>
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        <div class="action-buttons">
-                            ${circle.contact ? `<button class="action-btn">連絡する</button>` : ''}
-                            ${circle.website ? `<a href="${circle.website}" target="_blank" class="action-btn">ウェブサイト</a>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(expandedView);
-            
-            // Close on X button
-            expandedView.querySelector('.close-btn').addEventListener('click', () => {
-                document.body.removeChild(expandedView);
-            });
-            
-            // Close on outside click
-            expandedView.addEventListener('click', (e) => {
-                if (e.target === expandedView) {
-                    document.body.removeChild(expandedView);
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+                            <h2>${circle.name
