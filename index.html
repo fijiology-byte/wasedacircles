@@ -297,8 +297,8 @@
                 to bottom,
                 rgba(139, 0, 0, 0.8) 0%,
                 transparent 20%,
-                transparent 80%,
-                rgba(139, 0, 0, 0.8) 100%
+                transparent 70%,
+                rgba(139, 0, 0, 0.9) 100%
             );
             display: flex;
             flex-direction: column;
@@ -327,11 +327,27 @@
         .card-footer {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-end;
+        }
+
+        .member-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            width: 100%;
         }
 
         .member-count {
             font-size: 0.9rem;
+            line-height: 1.2;
+        }
+
+        .foreigner-count {
+            font-size: 0.75rem;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .foreigner-indicator {
@@ -953,8 +969,10 @@
                             ${circle.foreignMembers > 0 ? '<div class="foreigner-indicator" title="外国人メンバー在籍"></div>' : ''}
                         </div>
                         <div class="card-footer">
-                            <div class="member-count">メンバー: ${circle.members}</div>
-                            ${circle.foreignMembers > 0 ? `<div class="member-count">外国人: ${circle.foreignMembers}</div>` : ''}
+                            <div class="member-info">
+                                <div class="member-count">メンバー: ${circle.members}人</div>
+                                ${circle.foreignMembers > 0 ? `<div class="foreigner-count">外国人学生の受け入れ: ${circle.foreignMembers}人</div>` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
