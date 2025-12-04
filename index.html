@@ -678,12 +678,19 @@
         console.log("Initial currentCategory:", currentCategory);
         console.log("==============================");
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("🚀 DOM loaded, starting application...");
-            loadAllData();
+        // Initialize function
+        function initializeApp() {
+            console.log("🚀 Starting application...");
             setupEventListeners();
-        });
+            loadAllData();
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
 
         // Load data from all sheets
         async function loadAllData() {
@@ -802,40 +809,8 @@
             return values[1] || SUBCATEGORIES[category][0] || 'その他';
         }
 
-        // Setup event listeners
-        function setupEventListeners() {
-            // Category buttons
-            categoryButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    categoryButtons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    currentCategory = this.dataset.category;
-                    currentSubcategory = null;
-                    renderSubcategories();
-                    filterAndRenderCircles();
-                });
-            });
-            
-            // Search
-            searchInput.addEventListener('input', filterAndRenderCircles);
-            
-            // Foreigner friendly toggle
-            foreignerFriendly.addEventListener('change', filterAndRenderCircles);
-            
-            // Sort buttons
-            sortMembersBtn.addEventListener('click', function() {
-                sortMembersBtn.classList.toggle('active');
-                sortForeignMembersBtn.classList.remove('active');
-                filterAndRenderCircles();
-            });
-            
-            sortForeignMembersBtn.addEventListener('click', function() {
-                sortForeignMembersBtn.classList.toggle('active');
-                sortMembersBtn.classList.remove('active');
-                filterAndRenderCircles();
-            });
-        }
-
+        // setupEventListeners function is defined below
+        
         // Render subcategory buttons based on current category
         function renderSubcategories() {
             const subcategories = SUBCATEGORIES[currentCategory] || [];
@@ -1039,7 +1014,112 @@
                 }
             });
         }
-    }
+
+        // Refresh button functionality
+        function setupRefreshButton() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            const refreshMessage = document.getElementById('refreshMessage');
+            const lastUpdateTime = document.getElementById('lastUpdateTime');
+            
+            if (!refreshBtn) return;
+            
+            // Update timestamp
+            function updateTimestamp() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('ja-JP', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                lastUpdateTime.textContent = timeString;
+                refreshMessage.style.display = 'block';
+            }
+            
+            // Initialize timestamp
+            updateTimestamp();
+            
+            // Handle refresh click
+            refreshBtn.addEventListener('click', async function() {
+                // Show loading state
+                refreshBtn.innerHTML = '更新中... ⏳';
+                refreshBtn.disabled = true;
+                
+                const scrollPosition = window.scrollY;
+                
+                try {
+                    loadingSpinner.style.display = 'block';
+                    loadingSpinner.textContent = 'データを更新中...';
+                    
+                    // Reload fresh data
+                    await loadAllData();
+                    
+                    // Update timestamp
+                    updateTimestamp();
+                    
+                    // Show success message
+                    refreshBtn.innerHTML = '更新完了 ✅';
+                    refreshBtn.style.backgroundColor = '#2E8B57';
+                    
+                    setTimeout(() => {
+                        refreshBtn.innerHTML = 'データを更新 🔄';
+                        refreshBtn.style.backgroundColor = '';
+                        refreshBtn.disabled = false;
+                    }, 2000);
+                    
+                    window.scrollTo(0, scrollPosition);
+                    
+                } catch (error) {
+                    console.error('Refresh failed:', error);
+                    refreshBtn.innerHTML = '更新失敗 ❌';
+                    refreshBtn.style.backgroundColor = '#DC143C';
+                    
+                    setTimeout(() => {
+                        refreshBtn.innerHTML = 'データを更新 🔄';
+                        refreshBtn.style.backgroundColor = '';
+                        refreshBtn.disabled = false;
+                    }, 3000);
+                }
+            });
+        }
+        // Setup event listeners
+        function setupEventListeners() {
+            // Category buttons
+            categoryButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    categoryButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentCategory = this.dataset.category;
+                    currentSubcategory = null;
+                    renderSubcategories();
+                    filterAndRenderCircles();
+                });
+            });
+            
+            // Search
+            searchInput.addEventListener('input', filterAndRenderCircles);
+            
+            // Foreigner friendly toggle
+            foreignerFriendly.addEventListener('change', filterAndRenderCircles);
+            
+            // Sort buttons
+            sortMembersBtn.addEventListener('click', function() {
+                sortMembersBtn.classList.toggle('active');
+                sortForeignMembersBtn.classList.remove('active');
+                filterAndRenderCircles();
+            });
+            
+            sortForeignMembersBtn.addEventListener('click', function() {
+                sortForeignMembersBtn.classList.toggle('active');
+                sortMembersBtn.classList.remove('active');
+                filterAndRenderCircles();
+            });
+            
+            // Setup refresh button
+            setupRefreshButton();
+        }
+
+        // Initialize the application
+        initializeApp();
     </script>
 
   <!-- Refresh Button -->
@@ -1052,84 +1132,5 @@
     </div>
   </div>
 
-  <script>
-    // Refresh button elements
-    const refreshBtn = document.getElementById('refreshBtn');
-    const refreshMessage = document.getElementById('refreshMessage');
-    const lastUpdateTime = document.getElementById('lastUpdateTime');
-
-    // Update timestamp function
-    function updateTimestamp() {
-      const now = new Date();
-      const timeString = now.toLocaleTimeString('ja-JP', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        second: '2-digit'
-      });
-      lastUpdateTime.textContent = timeString;
-      refreshMessage.style.display = 'block';
-    }
-
-    // Initialize timestamp when page loads
-    updateTimestamp();
-
-    // Handle refresh button click
-    async function handleRefreshClick() {
-      if (!refreshBtn) return;
-      
-      // Show loading state
-      refreshBtn.innerHTML = '更新中... ⏳';
-      refreshBtn.disabled = true;
-      
-      // Save current scroll position
-      const scrollPosition = window.scrollY;
-      
-      try {
-        // Reload all data
-        loadingSpinner.style.display = 'block';
-        loadingSpinner.textContent = 'データを更新中...';
-        
-        // Clear current data
-        allCircles = [];
-        filteredCircles = [];
-        
-        // Reload fresh data
-        await loadAllData();
-        
-        // Update timestamp
-        updateTimestamp();
-        
-        // Show success message temporarily
-        refreshBtn.innerHTML = '更新完了 ✅';
-        refreshBtn.style.backgroundColor = '#2E8B57'; // Green
-        
-        // Restore original button after 2 seconds
-        setTimeout(() => {
-          refreshBtn.innerHTML = 'データを更新 🔄';
-          refreshBtn.style.backgroundColor = ''; // Reset to CSS color
-          refreshBtn.disabled = false;
-        }, 2000);
-        
-        // Restore scroll position
-        window.scrollTo(0, scrollPosition);
-        
-      } catch (error) {
-        console.error('Refresh failed:', error);
-        refreshBtn.innerHTML = '更新失敗 ❌';
-        refreshBtn.style.backgroundColor = '#DC143C'; // Red
-        
-        setTimeout(() => {
-          refreshBtn.innerHTML = 'データを更新 🔄';
-          refreshBtn.style.backgroundColor = '';
-          refreshBtn.disabled = false;
-        }, 3000);
-      }
-    }
-
-    // Add refresh button event listener
-    if (refreshBtn) {
-      refreshBtn.addEventListener('click', handleRefreshClick);
-    }
-  </script>
 </body>
 </html>
