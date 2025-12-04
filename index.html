@@ -570,6 +570,7 @@
             <div class="filter-section">
                 <h3>カテゴリで絞り込み</h3>
                 <div class="category-buttons">
+                    <button class="category-btn" data-category="ball_sports">球技スポーツ</button>
                     <button class="category-btn active" data-category="non_ball_sports">スポーツ(球技以外)</button>
                     <button class="category-btn" data-category="academic">学問</button>
                     <button class="category-btn" data-category="media">メディア・出版</button>
@@ -634,6 +635,7 @@
     <script>
         // Configuration
         const SHEET_URLS = {
+            ball_sports: "https://corsproxy.io/?https://docs.google.com/spreadsheets/d/e/2PACX-1vQDrdSULziXssYMm5fYRiFInxNIOuh3Gk2_jSpOdQa7eDETGv7KvAywK0FAOcdMBCFnJUjTCp3EEUF5/pub?output=csv",
             non_ball_sports: "https://corsproxy.io/?https://docs.google.com/spreadsheets/d/e/2PACX-1vRv68Z2O5A37_GNZWV5byGgRWcoeA0axvwyzYuwByq2vtleUspMTkpBn9FAGJ-jqejX-5FJnaiS1i_Q/pub?output=csv",
             academic: "https://corsproxy.io/?https://docs.google.com/spreadsheets/d/e/2PACX-1vSZeeFkaYJYzjzoCxucwMTaaGTD6tpyNCpZVhocgNcAcT5F-pSm4r_ext7Kzl4J4Olwayz-q_pnKGEa/pub?output=csv",
             media: "https://corsproxy.io/?https://docs.google.com/spreadsheets/d/e/2PACX-1vRF1QkL3Vno2tBzRQD0ZcNKa0oFwfUFcB8wpd9yPJI-Un-bMfD2ywrT4wqwri9piY8YEKjsY839_YfX/pub?output=csv",
@@ -644,6 +646,7 @@
 
         // Subcategory mapping
         const SUBCATEGORIES = {
+            ball_sports: ["サッカー", "バスケットボール", "野球", "テニス", "バレーボール", "ラグビー", "その他の球技"],
             non_ball_sports: ["バドミントン", "ダンス", "武道", "乗馬", "ヨット", "スキー", "水泳", "サイクリング", "アウトドア", "そのほかのスポーツ"],
             academic: ["政治", "経済", "歴史", "宗教", "哲学", "法律", "自然科学", "言語", "日本文学", "日本文化", "学問", "趣味", "技術"],
             media: ["出版 / Publication", "コミュニケーション / Communication", "マスメディア / Media", "企画 / Planning", "レクリエーション / Recreation"],
